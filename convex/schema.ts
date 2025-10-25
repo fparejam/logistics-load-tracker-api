@@ -24,7 +24,10 @@ export default defineSchema({
     loadboard_rate: v.number(), // decimal for currency
     weight: v.number(), // integer in lbs
     commodity_type: v.string(),
-    dimensions: v.string(), // free-form text like "48x102" or "40ft tarp"
+    notes: v.string(), // Additional information
+    num_of_pieces: v.number(), // Number of items
+    miles: v.number(), // Distance to travel
+    dimensions: v.string(), // Size measurements
   })
     .index("by_origin", ["origin"])
     .index("by_destination", ["destination"])

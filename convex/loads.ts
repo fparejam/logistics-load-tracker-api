@@ -38,6 +38,9 @@ export const listLoads = query({
         loadboard_rate: v.number(),
         weight: v.number(),
         commodity_type: v.string(),
+        notes: v.string(),
+        num_of_pieces: v.number(),
+        miles: v.number(),
         dimensions: v.string(),
       })
     ),
@@ -135,6 +138,9 @@ export const seedLoads = internalMutation({
         loadboard_rate: 850.0,
         weight: 42000,
         commodity_type: "Electronics",
+        notes: "Fragile - handle with care",
+        num_of_pieces: 50,
+        miles: 370,
         dimensions: "48x102",
       },
       {
@@ -146,6 +152,9 @@ export const seedLoads = internalMutation({
         loadboard_rate: 1850.0,
         weight: 38000,
         commodity_type: "Frozen Foods",
+        notes: "Maintain temperature below freezing",
+        num_of_pieces: 120,
+        miles: 800,
         dimensions: "53x102",
       },
       {
@@ -157,6 +166,9 @@ export const seedLoads = internalMutation({
         loadboard_rate: 1200.0,
         weight: 45000,
         commodity_type: "Steel Beams",
+        notes: "Requires certified driver",
+        num_of_pieces: 25,
+        miles: 925,
         dimensions: "40ft tarp",
       },
       {
@@ -168,6 +180,9 @@ export const seedLoads = internalMutation({
         loadboard_rate: 450.0,
         weight: 25000,
         commodity_type: "Furniture",
+        notes: "White glove delivery",
+        num_of_pieces: 45,
+        miles: 175,
         dimensions: "48x96",
       },
       {
@@ -179,6 +194,9 @@ export const seedLoads = internalMutation({
         loadboard_rate: 1650.0,
         weight: 40000,
         commodity_type: "Pharmaceuticals",
+        notes: "Medical grade storage required",
+        num_of_pieces: 85,
+        miles: 1195,
         dimensions: "53x102",
       },
       {
@@ -190,6 +208,9 @@ export const seedLoads = internalMutation({
         loadboard_rate: 750.0,
         weight: 35000,
         commodity_type: "Consumer Goods",
+        notes: "Standard handling",
+        num_of_pieces: 200,
+        miles: 520,
         dimensions: "48x102",
       },
       {
@@ -201,6 +222,9 @@ export const seedLoads = internalMutation({
         loadboard_rate: 950.0,
         weight: 30000,
         commodity_type: "Paper Products",
+        notes: "Hazmat training required",
+        num_of_pieces: 60,
+        miles: 440,
         dimensions: "53x102",
       },
       {
@@ -212,6 +236,9 @@ export const seedLoads = internalMutation({
         loadboard_rate: 1100.0,
         weight: 48000,
         commodity_type: "Construction Materials",
+        notes: "Oversized load permit needed",
+        num_of_pieces: 15,
+        miles: 565,
         dimensions: "48ft flatbed",
       },
       {
@@ -223,6 +250,9 @@ export const seedLoads = internalMutation({
         loadboard_rate: 1400.0,
         weight: 37000,
         commodity_type: "Dairy Products",
+        notes: "Cold chain compliance",
+        num_of_pieces: 95,
+        miles: 540,
         dimensions: "53x102",
       },
       {
@@ -234,6 +264,9 @@ export const seedLoads = internalMutation({
         loadboard_rate: 900.0,
         weight: 32000,
         commodity_type: "Automotive Parts",
+        notes: "Pre-loaded pallets",
+        num_of_pieces: 150,
+        miles: 440,
         dimensions: "48x102",
       },
       {
@@ -245,6 +278,9 @@ export const seedLoads = internalMutation({
         loadboard_rate: 650.0,
         weight: 28000,
         commodity_type: "Textiles",
+        notes: "Climate controlled",
+        num_of_pieces: 80,
+        miles: 350,
         dimensions: "48x96",
       },
       {
@@ -256,6 +292,9 @@ export const seedLoads = internalMutation({
         loadboard_rate: 550.0,
         weight: 44000,
         commodity_type: "Machinery",
+        notes: "Heavy machinery - rigging equipment",
+        num_of_pieces: 10,
+        miles: 210,
         dimensions: "40ft tarp",
       },
       {
@@ -267,6 +306,9 @@ export const seedLoads = internalMutation({
         loadboard_rate: 500.0,
         weight: 26000,
         commodity_type: "Appliances",
+        notes: "Standard appliance delivery",
+        num_of_pieces: 35,
+        miles: 170,
         dimensions: "48x102",
       },
       {
@@ -278,6 +320,9 @@ export const seedLoads = internalMutation({
         loadboard_rate: 1300.0,
         weight: 39000,
         commodity_type: "Fresh Produce",
+        notes: "Fresh produce - quick delivery",
+        num_of_pieces: 200,
+        miles: 630,
         dimensions: "53x102",
       },
       {
@@ -289,6 +334,9 @@ export const seedLoads = internalMutation({
         loadboard_rate: 450.0,
         weight: 24000,
         commodity_type: "Retail Goods",
+        notes: "Standard retail delivery",
+        num_of_pieces: 100,
+        miles: 175,
         dimensions: "48x96",
       },
     ];

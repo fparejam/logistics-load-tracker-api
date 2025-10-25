@@ -256,8 +256,11 @@ Retrieve a list of loads with optional filtering, pagination, and sorting.
       "delivery_datetime": "2024-02-17T14:00:00.000Z",
       "equipment_type": "reefer",
       "loadboard_rate": 1850.0,
+      "notes": "Maintain temperature below freezing",
       "weight": 38000,
       "commodity_type": "Frozen Foods",
+      "num_of_pieces": 120,
+      "miles": 800,
       "dimensions": "53x102"
     }
   ],
@@ -273,15 +276,18 @@ Retrieve a list of loads with optional filtering, pagination, and sorting.
 | ----------------- | ------ | ---------------------------------------------- |
 | _id               | string | Unique identifier for the load                 |
 | _creationTime     | number | Unix timestamp when the load was created       |
-| origin            | string | Origin city and state                          |
-| destination       | string | Destination city and state                     |
-| pickup_datetime   | string | Pickup date and time (ISO 8601 format)         |
-| delivery_datetime | string | Delivery date and time (ISO 8601 format)       |
-| equipment_type    | string | Type of equipment required                     |
-| loadboard_rate    | number | Rate for the load in dollars                   |
-| weight            | number | Weight of the load in pounds                   |
-| commodity_type    | string | Type of commodity being transported            |
-| dimensions        | string | Dimensions of the load (free-form text)        |
+| origin            | string | Starting location                              |
+| destination       | string | Delivery location                              |
+| pickup_datetime   | string | Date and time for pickup (ISO 8601 format)     |
+| delivery_datetime | string | Date and time for delivery (ISO 8601 format)   |
+| equipment_type    | string | Type of equipment needed                       |
+| loadboard_rate    | number | Listed rate for the load                       |
+| notes             | string | Additional information                         |
+| weight            | number | Load weight                                    |
+| commodity_type    | string | Type of goods                                  |
+| num_of_pieces     | number | Number of items                                |
+| miles             | number | Distance to travel                             |
+| dimensions        | string | Size measurements                              |
 
 ##### Status Codes
 

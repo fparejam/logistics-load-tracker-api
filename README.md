@@ -39,12 +39,22 @@ bun install
 ```
 
 3. Set up environment variables:
-The `.env.local` file should contain:
-```
-CONVEX_DEPLOYMENT=<your-convex-deployment>
-VITE_CONVEX_URL=<your-convex-url>
-API_KEY=demo-api-key-12345
-```
+   - First, run `bun run dev` to start Convex
+   - When prompted, choose "Start without an account (run Convex locally)"
+   - Convex will display your `VITE_CONVEX_URL` - copy it
+   - Create a `.env.local` file in the project root with:
+   
+   ```bash
+   # Create .env.local file
+   cat > .env.local << 'EOF'
+   VITE_CONVEX_URL=<paste-the-url-from-convex-output>
+   API_KEY=demo-api-key-12345
+   EOF
+   ```
+   
+   **Required Environment Variables:**
+   - `VITE_CONVEX_URL` - Your Convex deployment URL (from `convex dev` output)
+   - `API_KEY` - Demo key for testing (use `demo-api-key-12345`)
 
 4. Seed the database:
 ```bash

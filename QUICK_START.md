@@ -1,8 +1,46 @@
 # Quick Start Guide
 
+## 📋 Prerequisites
+
+Before starting, make sure you have:
+- **Node.js 18+** (required for Convex CLI)
+- **Bun** (latest version)
+
+To check your Node version:
+```bash
+node --version
+```
+
+If you need to upgrade Node, you can use nvm:
+```bash
+nvm install 20
+nvm use 20
+```
+
 ## 🚀 Get Started in 3 Steps
 
-### 1. Start the Development Server
+### 1. Set Up Environment Variables
+
+When you first run `bun run dev`, Convex will prompt you to login or run locally. Choose:
+- **"Start without an account (run Convex locally)"** for local development
+
+After Convex starts, it will display your `VITE_CONVEX_URL`. Copy it and create a `.env.local` file in the project root:
+
+```bash
+# Create .env.local file
+cat > .env.local << 'EOF'
+VITE_CONVEX_URL=<paste-the-url-from-convex-output>
+API_KEY=demo-api-key-12345
+EOF
+```
+
+**Required Environment Variables:**
+- `VITE_CONVEX_URL` - Your Convex deployment URL (from `convex dev` output)
+- `API_KEY` - Demo key for testing (use `demo-api-key-12345`)
+
+### 2. Start the Development Server
+
+After setting up your `.env.local` file, run:
 
 ```bash
 bun run dev
@@ -10,13 +48,13 @@ bun run dev
 
 The application will be available at `http://localhost:8080`
 
-### 2. Access the Web Interface
+### 3. Access the Web Interface
 
 Open your browser and navigate to:
 - **API Documentation**: http://localhost:8080
 - **API Tester**: http://localhost:8080/api-tester
 
-### 3. Test the API
+### 4. Test the API
 
 Use the demo API key to test the endpoints:
 

@@ -46,6 +46,7 @@ http.route({
 
     // Build query arguments
     const queryArgs: {
+      load_id?: string;
       origin?: string;
       destination?: string;
       equipment_type?: string;
@@ -62,6 +63,7 @@ http.route({
     } = {};
 
     // String filters
+    if (params.has("load_id")) queryArgs.load_id = params.get("load_id")!;
     if (params.has("origin")) queryArgs.origin = params.get("origin")!;
     if (params.has("destination")) queryArgs.destination = params.get("destination")!;
     if (params.has("equipment_type")) queryArgs.equipment_type = params.get("equipment_type")!;

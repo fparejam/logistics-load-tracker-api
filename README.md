@@ -218,6 +218,7 @@ Retrieve a list of loads with optional filtering, pagination, and sorting.
 
 | Parameter       | Type   | Description                                    | Example                    |
 | --------------- | ------ | ---------------------------------------------- | -------------------------- |
+| load_id         | string | Filter by specific load ID                     | `LOAD-002`                 |
 | origin          | string | Filter by origin city                          | `Chicago, IL`              |
 | destination     | string | Filter by destination city                     | `New York, NY`             |
 | equipment_type  | string | Filter by equipment type                       | `dry_van`, `reefer`, `flatbed` |
@@ -248,14 +249,15 @@ Retrieve a list of loads with optional filtering, pagination, and sorting.
 {
   "items": [
     {
-      "_id": "jd7x8y9z0a1b2c3d4e5f6g7h",
-      "_creationTime": 1708012345678,
+      "_id": "jx7ehrg2ezd2bwhb2vdd0k8z617t54ea",
+      "_creationTime": 1761390253186.5322,
+      "load_id": "LOAD-002",
       "origin": "Chicago, IL",
       "destination": "New York, NY",
       "pickup_datetime": "2024-02-16T06:00:00.000Z",
       "delivery_datetime": "2024-02-17T14:00:00.000Z",
       "equipment_type": "reefer",
-      "loadboard_rate": 1850.0,
+      "loadboard_rate": 1850,
       "notes": "Maintain temperature below freezing",
       "weight": 38000,
       "commodity_type": "Frozen Foods",
@@ -306,6 +308,13 @@ curl -X GET "http://localhost:8080/loads" \
   -H "X-API-Key: demo-api-key-12345"
 ```
 
+#### Filter by specific load ID
+
+```bash
+curl -X GET "http://localhost:8080/loads?load_id=LOAD-002" \
+  -H "X-API-Key: demo-api-key-12345"
+```
+
 #### Filter by origin
 
 ```bash
@@ -348,10 +357,104 @@ curl -X GET "http://localhost:8080/loads?sort_by=loadboard_rate&sort_order=desc"
   -H "X-API-Key: demo-api-key-12345"
 ```
 
-#### Combined filters
+#### Combined filters (basic)
 
 ```bash
 curl -X GET "http://localhost:8080/loads?origin=Chicago,%20IL&equipment_type=reefer&min_rate=1000&limit=5&sort_by=loadboard_rate&sort_order=desc" \
+  -H "X-API-Key: demo-api-key-12345"
+```
+
+#### Advanced filtering combinations
+
+**Filter by origin and destination:**
+```bash
+curl -X GET "http://localhost:8080/loads?origin=Los%20Angeles%2C%20CA&destination=Phoenix%2C%20AZ" \
+  -H "X-API-Key: demo-api-key-12345"
+```
+
+**Filter by equipment type and rate range:**
+```bash
+curl -X GET "http://localhost:8080/loads?equipment_type=dry_van&min_rate=500&max_rate=1500" \
+  -H "X-API-Key: demo-api-key-12345"
+```
+
+**Filter by pickup date range and equipment:**
+```bash
+curl -X GET "http://localhost:8080/loads?pickup_from=2024-02-15T00:00:00.000Z&pickup_to=2024-02-20T23:59:59.999Z&equipment_type=flatbed" \
+  -H "X-API-Key: demo-api-key-12345"
+```
+
+**Filter by delivery date range and rate:**
+```bash
+curl -X GET "http://localhost:8080/loads?delivery_from=2024-02-16T00:00:00.000Z&delivery_to=2024-02-21T23:59:59.999Z&min_rate=1000" \
+  -H "X-API-Key: demo-api-key-12345"
+```
+
+**Complex multi-parameter query:**
+```bash
+curl -X GET "http://localhost:8080/loads?origin=Los%20Angeles%2C%20CA&equipment_type=dry_van&pickup_from=2024-02-15T00:00:00.000Z&pickup_to=2024-02-20T23:59:59.999Z&min_rate=500&max_rate=2000&limit=10&offset=0&sort_by=loadboard_rate&sort_order=desc" \
+  -H "X-API-Key: demo-api-key-12345"
+```
+
+**Find high-value reefer loads:**
+```bash
+curl -X GET "http://localhost:8080/loads?equipment_type=reefer&min_rate=1500&sort_by=loadboard_rate&sort_order=desc&limit=5" \
+  -H "X-API-Key: demo-api-key-12345"
+```
+
+**Find loads by specific date range with pagination:**
+```bash
+curl -X GET "http://localhost:8080/loads?pickup_from=2024-02-15T00:00:00.000Z&pickup_to=2024-02-18T23:59:59.999Z&limit=3&offset=0&sort_by=pickup_datetime&sort_order=asc" \
+  -H "X-API-Key: demo-api-key-12345"
+```
+
+**Find flatbed loads with specific rate range:**
+```bash
+curl -X GET "http://localhost:8080/loads?equipment_type=flatbed&min_rate=800&max_rate=1500&sort_by=miles&sort_order=desc" \
+  -H "X-API-Key: demo-api-key-12345"
+```
+
+### Real-World Query Examples
+
+**Find all loads for a specific route:**
+```bash
+curl -X GET "http://localhost:8080/loads?origin=Los%20Angeles%2C%20CA&destination=Phoenix%2C%20AZ" \
+  -H "X-API-Key: demo-api-key-12345"
+```
+
+**Find high-value loads (over $1500) sorted by rate:**
+```bash
+curl -X GET "http://localhost:8080/loads?min_rate=1500&sort_by=loadboard_rate&sort_order=desc&limit=10" \
+  -H "X-API-Key: demo-api-key-12345"
+```
+
+**Find reefer loads for next week:**
+```bash
+curl -X GET "http://localhost:8080/loads?equipment_type=reefer&pickup_from=2024-02-15T00:00:00.000Z&pickup_to=2024-02-22T23:59:59.999Z" \
+  -H "X-API-Key: demo-api-key-12345"
+```
+
+**Find loads by commodity type (using notes field):**
+```bash
+curl -X GET "http://localhost:8080/loads?equipment_type=dry_van&min_rate=600&max_rate=1200" \
+  -H "X-API-Key: demo-api-key-12345"
+```
+
+**Find loads for specific date range with pagination:**
+```bash
+curl -X GET "http://localhost:8080/loads?pickup_from=2024-02-15T00:00:00.000Z&pickup_to=2024-02-18T23:59:59.999Z&limit=5&offset=0&sort_by=pickup_datetime&sort_order=asc" \
+  -H "X-API-Key: demo-api-key-12345"
+```
+
+**Find loads by weight range (using notes to identify heavy loads):**
+```bash
+curl -X GET "http://localhost:8080/loads?equipment_type=flatbed&min_rate=1000" \
+  -H "X-API-Key: demo-api-key-12345"
+```
+
+**Find loads requiring special handling:**
+```bash
+curl -X GET "http://localhost:8080/loads?equipment_type=reefer&min_rate=1200&sort_by=loadboard_rate&sort_order=desc" \
   -H "X-API-Key: demo-api-key-12345"
 ```
 
@@ -425,17 +528,21 @@ The `loads` table includes the following fields:
 
 | Field             | Type   | Description                          | Indexed |
 | ----------------- | ------ | ------------------------------------ | ------- |
-| _id               | string | Auto-generated unique identifier     | Yes     |
+| _id               | string | Auto-generated Convex document ID   | Yes     |
 | _creationTime     | number | Unix timestamp                       | No      |
+| load_id           | string | Unique business identifier           | No      |
 | origin            | string | Origin city and state                | Yes     |
 | destination       | string | Destination city and state           | Yes     |
 | pickup_datetime   | number | UTC timestamp (milliseconds)         | Yes     |
 | delivery_datetime | number | UTC timestamp (milliseconds)         | Yes     |
 | equipment_type    | string | Equipment type                       | Yes     |
 | loadboard_rate    | number | Rate in dollars                      | Yes     |
+| notes             | string | Additional information               | No      |
 | weight            | number | Weight in pounds                     | No      |
 | commodity_type    | string | Type of commodity                    | No      |
-| dimensions        | string | Free-form dimensions text            | No      |
+| num_of_pieces     | number | Number of items                      | No      |
+| miles             | number | Distance to travel                   | No      |
+| dimensions        | string | Size measurements                    | No      |
 
 ---
 
@@ -664,17 +771,21 @@ The following equipment types are supported:
 
 ```typescript
 {
-  _id: string;                    // Auto-generated unique identifier
+  _id: string;                    // Auto-generated Convex document ID
   _creationTime: number;          // Unix timestamp
+  load_id: string;                // Unique business identifier (LOAD-001, LOAD-002, etc.)
   origin: string;                 // Origin city and state
   destination: string;            // Destination city and state
   pickup_datetime: number;        // UTC timestamp (milliseconds)
   delivery_datetime: number;      // UTC timestamp (milliseconds)
   equipment_type: string;         // Equipment type
   loadboard_rate: number;         // Rate in dollars
+  notes: string;                  // Additional information
   weight: number;                 // Weight in pounds
   commodity_type: string;         // Type of commodity
-  dimensions: string;             // Free-form dimensions text
+  num_of_pieces: number;          // Number of items
+  miles: number;                  // Distance to travel
+  dimensions: string;             // Size measurements
 }
 ```
 
@@ -682,17 +793,21 @@ The following equipment types are supported:
 
 ```typescript
 {
-  _id: string;                    // Auto-generated unique identifier
+  _id: string;                    // Auto-generated Convex document ID
   _creationTime: number;          // Unix timestamp
+  load_id: string;                // Unique business identifier (LOAD-001, LOAD-002, etc.)
   origin: string;                 // Origin city and state
   destination: string;            // Destination city and state
   pickup_datetime: string;        // ISO 8601 string (e.g., "2024-02-15T08:00:00.000Z")
   delivery_datetime: string;      // ISO 8601 string (e.g., "2024-02-15T18:00:00.000Z")
   equipment_type: string;         // Equipment type
   loadboard_rate: number;         // Rate in dollars
+  notes: string;                  // Additional information
   weight: number;                 // Weight in pounds
   commodity_type: string;         // Type of commodity
-  dimensions: string;             // Free-form dimensions text
+  num_of_pieces: number;          // Number of items
+  miles: number;                  // Distance to travel
+  dimensions: string;             // Size measurements
 }
 ```
 

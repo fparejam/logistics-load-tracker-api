@@ -38,6 +38,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Parse query parameters
       const queryArgs: {
+        load_id?: string;
         origin?: string;
         destination?: string;
         equipment_type?: string;
@@ -54,6 +55,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } = {};
 
       // String filters
+      if (req.query.load_id) queryArgs.load_id = req.query.load_id as string;
       if (req.query.origin) queryArgs.origin = req.query.origin as string;
       if (req.query.destination)
         queryArgs.destination = req.query.destination as string;

@@ -9,6 +9,7 @@ import { Doc } from "./_generated/dataModel";
 export const listLoads = query({
   args: {
     // Filtering
+    load_id: v.optional(v.string()),
     origin: v.optional(v.string()),
     destination: v.optional(v.string()),
     equipment_type: v.optional(v.string()),
@@ -60,6 +61,9 @@ export const listLoads = query({
     let loads = await ctx.db.query("loads").collect();
 
     // Apply filters
+    if (args.load_id) {
+      loads = loads.filter((load) => load.load_id === args.load_id);
+    }
     if (args.origin) {
       loads = loads.filter((load) => load.origin === args.origin);
     }
@@ -491,7 +495,6 @@ export const clearAndSeedLoads = internalMutation({
   },
 });
 import { internalQuery } from "./_generated/server";
-import { v } from "convex/values";
 
 export const queryAllLoads = internalQuery({
   args: {},

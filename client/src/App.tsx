@@ -15,6 +15,7 @@ import AdminPage from "./pages/admin";
 import { LoadingLoginScreen } from "./pages/loading-login-screen";
 import NotFound from "./pages/not-found";
 import ProfilePage from "./pages/profile";
+import ApiTester from "./pages/api-tester";
 
 function AuthenticatedRouter() {
   const currentUser = useQuery(api.users.me);
@@ -29,8 +30,11 @@ function AuthenticatedRouter() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Main chat page */}
+        {/* Main page */}
         <Route path="/" element={<Index />} />
+
+        {/* API Tester page */}
+        <Route path="/api-tester" element={<ApiTester />} />
 
         {/* Profile page - accessible to all authenticated users */}
         <Route path="/profile" element={<ProfilePage />} />

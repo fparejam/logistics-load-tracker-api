@@ -17,10 +17,9 @@ export function Layout({ children }: { children: ReactNode }) {
               onClick={() => navigate("/")}
               className="flex items-center space-x-2"
             >
-              {/* TODO: Edit the icon and app title  */}
               <Globe className="size-5 text-muted-foreground" />
               <span className="text-base font-medium text-foreground">
-                App Title
+                Load Management API
               </span>
             </button>
           </div>

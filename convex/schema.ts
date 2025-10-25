@@ -15,8 +15,21 @@ export default defineSchema({
    * them as you see fit.
    */
   /* ADD ANY NEW TABLES HERE */
-  // TODO: remove this table
-  dummy: defineTable({
-    name: v.string(),
-  }),
+  loads: defineTable({
+    origin: v.string(),
+    destination: v.string(),
+    pickup_datetime: v.number(), // UTC timestamp
+    delivery_datetime: v.number(), // UTC timestamp
+    equipment_type: v.string(), // e.g., dry_van, reefer, flatbed
+    loadboard_rate: v.number(), // decimal for currency
+    weight: v.number(), // integer in lbs
+    commodity_type: v.string(),
+    dimensions: v.string(), // free-form text like "48x102" or "40ft tarp"
+  })
+    .index("by_origin", ["origin"])
+    .index("by_destination", ["destination"])
+    .index("by_equipment_type", ["equipment_type"])
+    .index("by_pickup_datetime", ["pickup_datetime"])
+    .index("by_delivery_datetime", ["delivery_datetime"])
+    .index("by_loadboard_rate", ["loadboard_rate"]),
 });

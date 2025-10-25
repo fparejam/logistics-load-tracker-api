@@ -49,10 +49,10 @@ http.route({
       origin?: string;
       destination?: string;
       equipment_type?: string;
-      pickup_from?: string;
-      pickup_to?: string;
-      delivery_from?: string;
-      delivery_to?: string;
+      pickup_from?: number;
+      pickup_to?: number;
+      delivery_from?: number;
+      delivery_to?: number;
       min_rate?: number;
       max_rate?: number;
       limit?: number;
@@ -66,11 +66,31 @@ http.route({
     if (params.has("destination")) queryArgs.destination = params.get("destination")!;
     if (params.has("equipment_type")) queryArgs.equipment_type = params.get("equipment_type")!;
 
-    // Date filters (pass ISO 8601 strings directly)
-    if (params.has("pickup_from")) queryArgs.pickup_from = params.get("pickup_from")!;
-    if (params.has("pickup_to")) queryArgs.pickup_to = params.get("pickup_to")!;
-    if (params.has("delivery_from")) queryArgs.delivery_from = params.get("delivery_from")!;
-    if (params.has("delivery_to")) queryArgs.delivery_to = params.get("delivery_to")!;
+    // Date filters - convert ISO strings to timestamps
+    if (params.has("pickup_from")) {
+      const date = new Date(params.get("pickup_from")!);
+      if (!isNaN(date.getTime())) {
+        queryArgs.pickup_from = date.getTime();
+      }
+    }
+    if (params.has("pickup_to")) {
+      const date = new Date(params.get("pickup_to")!);
+      if (!isNaN(date.getTime())) {
+        queryArgs.pickup_to = date.getTime();
+      }
+    }
+    if (params.has("delivery_from")) {
+      const date = new Date(params.get("delivery_from")!);
+      if (!isNaN(date.getTime())) {
+        queryArgs.delivery_from = date.getTime();
+      }
+    }
+    if (params.has("delivery_to")) {
+      const date = new Date(params.get("delivery_to")!);
+      if (!isNaN(date.getTime())) {
+        queryArgs.delivery_to = date.getTime();
+      }
+    }
 
     // Rate filters
     if (params.has("min_rate")) {
@@ -118,10 +138,16 @@ http.route({
       // Call the query
       const result = await ctx.runQuery(api.loads.listLoads, queryArgs);
 
-      // Dates are already in ISO 8601 format, return directly
+      // Convert timestamps to ISO 8601 strings for the response
+      const formattedItems = result.items.map((item) => ({
+        ...item,
+        pickup_datetime: new Date(item.pickup_datetime).toISOString(),
+        delivery_datetime: new Date(item.delivery_datetime).toISOString(),
+      }));
+
       return new Response(
         JSON.stringify({
-          items: result.items,
+          items: formattedItems,
           total: result.total,
           limit: result.limit,
           offset: result.offset,

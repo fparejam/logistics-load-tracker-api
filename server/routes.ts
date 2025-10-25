@@ -60,18 +60,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (req.query.equipment_type)
         queryArgs.equipment_type = req.query.equipment_type as string;
 
-      // Date filters (pass ISO 8601 strings directly)
+      // Date filters - convert ISO strings to timestamps
       if (req.query.pickup_from) {
-        queryArgs.pickup_from = req.query.pickup_from as string;
+        const date = new Date(req.query.pickup_from as string);
+        if (!isNaN(date.getTime())) {
+          queryArgs.pickup_from = date.getTime();
+        }
       }
       if (req.query.pickup_to) {
-        queryArgs.pickup_to = req.query.pickup_to as string;
+        const date = new Date(req.query.pickup_to as string);
+        if (!isNaN(date.getTime())) {
+          queryArgs.pickup_to = date.getTime();
+        }
       }
       if (req.query.delivery_from) {
-        queryArgs.delivery_from = req.query.delivery_from as string;
+        const date = new Date(req.query.delivery_from as string);
+        if (!isNaN(date.getTime())) {
+          queryArgs.delivery_from = date.getTime();
+        }
       }
       if (req.query.delivery_to) {
-        queryArgs.delivery_to = req.query.delivery_to as string;
+        const date = new Date(req.query.delivery_to as string);
+        if (!isNaN(date.getTime())) {
+          queryArgs.delivery_to = date.getTime();
+        }
       }
 
       // Rate filters

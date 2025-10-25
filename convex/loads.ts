@@ -51,7 +51,7 @@ export const listLoads = query({
     offset: v.number(),
   }),
   handler: async (ctx, args) => {
-    const limit = args.limit ?? 50;
+    const limit = args.limit ?? 5;
     const offset = args.offset ?? 0;
     const sortBy = args.sort_by ?? "pickup_datetime";
     const sortOrder = args.sort_order ?? "asc";

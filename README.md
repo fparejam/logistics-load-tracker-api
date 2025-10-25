@@ -233,7 +233,7 @@ Retrieve a list of loads with optional filtering, pagination, and sorting.
 
 | Parameter | Type   | Description                      | Default | Max |
 | --------- | ------ | -------------------------------- | ------- | --- |
-| limit     | number | Number of results to return      | 50      | 100 |
+| limit     | number | Number of results to return      | 5       | 100 |
 | offset    | number | Number of results to skip        | 0       | -   |
 
 **Sorting:**

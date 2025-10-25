@@ -12,10 +12,10 @@ export const listLoads = query({
     origin: v.optional(v.string()),
     destination: v.optional(v.string()),
     equipment_type: v.optional(v.string()),
-    pickup_from: v.optional(v.number()), // UTC timestamp
-    pickup_to: v.optional(v.number()), // UTC timestamp
-    delivery_from: v.optional(v.number()), // UTC timestamp
-    delivery_to: v.optional(v.number()), // UTC timestamp
+    pickup_from: v.optional(v.string()), // ISO 8601 date string
+    pickup_to: v.optional(v.string()), // ISO 8601 date string
+    delivery_from: v.optional(v.string()), // ISO 8601 date string
+    delivery_to: v.optional(v.string()), // ISO 8601 date string
     min_rate: v.optional(v.number()),
     max_rate: v.optional(v.number()),
     // Pagination
@@ -32,8 +32,8 @@ export const listLoads = query({
         _creationTime: v.number(),
         origin: v.string(),
         destination: v.string(),
-        pickup_datetime: v.number(),
-        delivery_datetime: v.number(),
+        pickup_datetime: v.string(), // ISO 8601 date string
+        delivery_datetime: v.string(), // ISO 8601 date string
         equipment_type: v.string(),
         loadboard_rate: v.number(),
         weight: v.number(),
@@ -86,9 +86,15 @@ export const listLoads = query({
 
     // Sort
     loads.sort((a, b) => {
-      const aVal = sortBy === "pickup_datetime" ? a.pickup_datetime : a.loadboard_rate;
-      const bVal = sortBy === "pickup_datetime" ? b.pickup_datetime : b.loadboard_rate;
-      return sortOrder === "asc" ? aVal - bVal : bVal - aVal;
+      if (sortBy === "pickup_datetime") {
+        // Compare ISO 8601 date strings directly
+        return sortOrder === "asc" 
+          ? a.pickup_datetime.localeCompare(b.pickup_datetime)
+          : b.pickup_datetime.localeCompare(a.pickup_datetime);
+      } else {
+        // Compare numbers for loadboard_rate
+        return sortOrder === "asc" ? a.loadboard_rate - b.loadboard_rate : b.loadboard_rate - a.loadboard_rate;
+      }
     });
 
     const total = loads.length;
@@ -123,8 +129,8 @@ export const seedLoads = internalMutation({
       {
         origin: "Los Angeles, CA",
         destination: "Phoenix, AZ",
-        pickup_datetime: new Date("2024-02-15T08:00:00Z").getTime(),
-        delivery_datetime: new Date("2024-02-15T18:00:00Z").getTime(),
+        pickup_datetime: "2024-02-15T08:00:00.000Z",
+        delivery_datetime: "2024-02-15T18:00:00.000Z",
         equipment_type: "dry_van",
         loadboard_rate: 850.0,
         weight: 42000,
@@ -134,8 +140,8 @@ export const seedLoads = internalMutation({
       {
         origin: "Chicago, IL",
         destination: "New York, NY",
-        pickup_datetime: new Date("2024-02-16T06:00:00Z").getTime(),
-        delivery_datetime: new Date("2024-02-17T14:00:00Z").getTime(),
+        pickup_datetime: "2024-02-16T06:00:00.000Z",
+        delivery_datetime: "2024-02-17T14:00:00.000Z",
         equipment_type: "reefer",
         loadboard_rate: 1850.0,
         weight: 38000,
@@ -145,8 +151,8 @@ export const seedLoads = internalMutation({
       {
         origin: "Dallas, TX",
         destination: "Atlanta, GA",
-        pickup_datetime: new Date("2024-02-17T10:00:00Z").getTime(),
-        delivery_datetime: new Date("2024-02-18T16:00:00Z").getTime(),
+        pickup_datetime: "2024-02-17T10:00:00.000Z",
+        delivery_datetime: "2024-02-18T16:00:00.000Z",
         equipment_type: "flatbed",
         loadboard_rate: 1200.0,
         weight: 45000,
@@ -156,8 +162,8 @@ export const seedLoads = internalMutation({
       {
         origin: "Seattle, WA",
         destination: "Portland, OR",
-        pickup_datetime: new Date("2024-02-18T09:00:00Z").getTime(),
-        delivery_datetime: new Date("2024-02-18T15:00:00Z").getTime(),
+        pickup_datetime: "2024-02-18T09:00:00.000Z",
+        delivery_datetime: "2024-02-18T15:00:00.000Z",
         equipment_type: "dry_van",
         loadboard_rate: 450.0,
         weight: 25000,
@@ -167,8 +173,8 @@ export const seedLoads = internalMutation({
       {
         origin: "Miami, FL",
         destination: "Houston, TX",
-        pickup_datetime: new Date("2024-02-19T07:00:00Z").getTime(),
-        delivery_datetime: new Date("2024-02-20T19:00:00Z").getTime(),
+        pickup_datetime: "2024-02-19T07:00:00.000Z",
+        delivery_datetime: "2024-02-20T19:00:00.000Z",
         equipment_type: "reefer",
         loadboard_rate: 1650.0,
         weight: 40000,
@@ -178,8 +184,8 @@ export const seedLoads = internalMutation({
       {
         origin: "Denver, CO",
         destination: "Salt Lake City, UT",
-        pickup_datetime: new Date("2024-02-20T08:00:00Z").getTime(),
-        delivery_datetime: new Date("2024-02-20T20:00:00Z").getTime(),
+        pickup_datetime: "2024-02-20T08:00:00.000Z",
+        delivery_datetime: "2024-02-20T20:00:00.000Z",
         equipment_type: "dry_van",
         loadboard_rate: 750.0,
         weight: 35000,
@@ -189,8 +195,8 @@ export const seedLoads = internalMutation({
       {
         origin: "Boston, MA",
         destination: "Washington, DC",
-        pickup_datetime: new Date("2024-02-21T06:00:00Z").getTime(),
-        delivery_datetime: new Date("2024-02-21T18:00:00Z").getTime(),
+        pickup_datetime: "2024-02-21T06:00:00.000Z",
+        delivery_datetime: "2024-02-21T18:00:00.000Z",
         equipment_type: "dry_van",
         loadboard_rate: 950.0,
         weight: 30000,
@@ -200,8 +206,8 @@ export const seedLoads = internalMutation({
       {
         origin: "San Francisco, CA",
         destination: "Las Vegas, NV",
-        pickup_datetime: new Date("2024-02-22T10:00:00Z").getTime(),
-        delivery_datetime: new Date("2024-02-22T22:00:00Z").getTime(),
+        pickup_datetime: "2024-02-22T10:00:00.000Z",
+        delivery_datetime: "2024-02-22T22:00:00.000Z",
         equipment_type: "flatbed",
         loadboard_rate: 1100.0,
         weight: 48000,
@@ -211,8 +217,8 @@ export const seedLoads = internalMutation({
       {
         origin: "Philadelphia, PA",
         destination: "Charlotte, NC",
-        pickup_datetime: new Date("2024-02-23T07:00:00Z").getTime(),
-        delivery_datetime: new Date("2024-02-24T13:00:00Z").getTime(),
+        pickup_datetime: "2024-02-23T07:00:00.000Z",
+        delivery_datetime: "2024-02-24T13:00:00.000Z",
         equipment_type: "reefer",
         loadboard_rate: 1400.0,
         weight: 37000,
@@ -222,8 +228,8 @@ export const seedLoads = internalMutation({
       {
         origin: "Minneapolis, MN",
         destination: "Kansas City, MO",
-        pickup_datetime: new Date("2024-02-24T08:00:00Z").getTime(),
-        delivery_datetime: new Date("2024-02-25T14:00:00Z").getTime(),
+        pickup_datetime: "2024-02-24T08:00:00.000Z",
+        delivery_datetime: "2024-02-25T14:00:00.000Z",
         equipment_type: "dry_van",
         loadboard_rate: 900.0,
         weight: 32000,
@@ -233,8 +239,8 @@ export const seedLoads = internalMutation({
       {
         origin: "Phoenix, AZ",
         destination: "San Diego, CA",
-        pickup_datetime: new Date("2024-02-25T09:00:00Z").getTime(),
-        delivery_datetime: new Date("2024-02-25T17:00:00Z").getTime(),
+        pickup_datetime: "2024-02-25T09:00:00.000Z",
+        delivery_datetime: "2024-02-25T17:00:00.000Z",
         equipment_type: "dry_van",
         loadboard_rate: 650.0,
         weight: 28000,
@@ -244,8 +250,8 @@ export const seedLoads = internalMutation({
       {
         origin: "Nashville, TN",
         destination: "Memphis, TN",
-        pickup_datetime: new Date("2024-02-26T10:00:00Z").getTime(),
-        delivery_datetime: new Date("2024-02-26T16:00:00Z").getTime(),
+        pickup_datetime: "2024-02-26T10:00:00.000Z",
+        delivery_datetime: "2024-02-26T16:00:00.000Z",
         equipment_type: "flatbed",
         loadboard_rate: 550.0,
         weight: 44000,
@@ -255,8 +261,8 @@ export const seedLoads = internalMutation({
       {
         origin: "Detroit, MI",
         destination: "Cleveland, OH",
-        pickup_datetime: new Date("2024-02-27T07:00:00Z").getTime(),
-        delivery_datetime: new Date("2024-02-27T13:00:00Z").getTime(),
+        pickup_datetime: "2024-02-27T07:00:00.000Z",
+        delivery_datetime: "2024-02-27T13:00:00.000Z",
         equipment_type: "dry_van",
         loadboard_rate: 500.0,
         weight: 26000,
@@ -266,8 +272,8 @@ export const seedLoads = internalMutation({
       {
         origin: "Portland, OR",
         destination: "Sacramento, CA",
-        pickup_datetime: new Date("2024-02-28T08:00:00Z").getTime(),
-        delivery_datetime: new Date("2024-02-29T14:00:00Z").getTime(),
+        pickup_datetime: "2024-02-28T08:00:00.000Z",
+        delivery_datetime: "2024-02-29T14:00:00.000Z",
         equipment_type: "reefer",
         loadboard_rate: 1300.0,
         weight: 39000,
@@ -277,8 +283,8 @@ export const seedLoads = internalMutation({
       {
         origin: "Indianapolis, IN",
         destination: "Columbus, OH",
-        pickup_datetime: new Date("2024-03-01T09:00:00Z").getTime(),
-        delivery_datetime: new Date("2024-03-01T15:00:00Z").getTime(),
+        pickup_datetime: "2024-03-01T09:00:00.000Z",
+        delivery_datetime: "2024-03-01T15:00:00.000Z",
         equipment_type: "dry_van",
         loadboard_rate: 450.0,
         weight: 24000,

@@ -41,10 +41,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         origin?: string;
         destination?: string;
         equipment_type?: string;
-        pickup_from?: number;
-        pickup_to?: number;
-        delivery_from?: number;
-        delivery_to?: number;
+        pickup_from?: string;
+        pickup_to?: string;
+        delivery_from?: string;
+        delivery_to?: string;
         min_rate?: number;
         max_rate?: number;
         limit?: number;
@@ -60,30 +60,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (req.query.equipment_type)
         queryArgs.equipment_type = req.query.equipment_type as string;
 
-      // Date filters (convert ISO strings to timestamps)
+      // Date filters (pass ISO 8601 strings directly)
       if (req.query.pickup_from) {
-        const date = new Date(req.query.pickup_from as string);
-        if (!isNaN(date.getTime())) {
-          queryArgs.pickup_from = date.getTime();
-        }
+        queryArgs.pickup_from = req.query.pickup_from as string;
       }
       if (req.query.pickup_to) {
-        const date = new Date(req.query.pickup_to as string);
-        if (!isNaN(date.getTime())) {
-          queryArgs.pickup_to = date.getTime();
-        }
+        queryArgs.pickup_to = req.query.pickup_to as string;
       }
       if (req.query.delivery_from) {
-        const date = new Date(req.query.delivery_from as string);
-        if (!isNaN(date.getTime())) {
-          queryArgs.delivery_from = date.getTime();
-        }
+        queryArgs.delivery_from = req.query.delivery_from as string;
       }
       if (req.query.delivery_to) {
-        const date = new Date(req.query.delivery_to as string);
-        if (!isNaN(date.getTime())) {
-          queryArgs.delivery_to = date.getTime();
-        }
+        queryArgs.delivery_to = req.query.delivery_to as string;
       }
 
       // Rate filters
@@ -131,15 +119,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Call the Convex query
       const result = await convex.query(api.loads.listLoads, queryArgs);
 
-      // Convert timestamps back to ISO strings for the response
-      const formattedItems = result.items.map((item) => ({
-        ...item,
-        pickup_datetime: new Date(item.pickup_datetime).toISOString(),
-        delivery_datetime: new Date(item.delivery_datetime).toISOString(),
-      }));
-
+      // Dates are already in ISO 8601 format, return directly
       res.json({
-        items: formattedItems,
+        items: result.items,
         total: result.total,
         limit: result.limit,
         offset: result.offset,

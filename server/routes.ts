@@ -119,9 +119,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Call the Convex query
       const result = await convex.query(api.loads.listLoads, queryArgs);
 
-      // Dates are already in ISO 8601 format, return directly
+      // Convert timestamps to ISO 8601 strings for the response
+      const formattedItems = result.items.map((item) => ({
+        ...item,
+        pickup_datetime: new Date(item.pickup_datetime).toISOString(),
+        delivery_datetime: new Date(item.delivery_datetime).toISOString(),
+      }));
+
       res.json({
-        items: result.items,
+        items: formattedItems,
         total: result.total,
         limit: result.limit,
         offset: result.offset,

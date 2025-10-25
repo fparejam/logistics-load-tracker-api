@@ -41,10 +41,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         origin?: string;
         destination?: string;
         equipment_type?: string;
-        pickup_from?: string;
-        pickup_to?: string;
-        delivery_from?: string;
-        delivery_to?: string;
+        pickup_from?: number;
+        pickup_to?: number;
+        delivery_from?: number;
+        delivery_to?: number;
         min_rate?: number;
         max_rate?: number;
         limit?: number;

@@ -16,14 +16,18 @@ export default defineSchema({
    */
   /* ADD ANY NEW TABLES HERE */
   loads: defineTable({
-    origin: v.string(),
-    destination: v.string(),
-    pickup_datetime: v.number(), // UTC timestamp (milliseconds)
-    delivery_datetime: v.number(), // UTC timestamp (milliseconds)
-    equipment_type: v.string(), // e.g., dry_van, reefer, flatbed
-    loadboard_rate: v.number(), // decimal for currency
-    weight: v.number(), // integer in lbs
-    commodity_type: v.string(),
+    load_id: v.string(), // Unique identifier for the load
+    origin: v.string(), // Starting location
+    destination: v.string(), // Delivery location
+    pickup_datetime: v.number(), // Date and time for pickup (UTC timestamp)
+    delivery_datetime: v.number(), // Date and time for delivery (UTC timestamp)
+    equipment_type: v.string(), // Type of equipment needed
+    loadboard_rate: v.number(), // Listed rate for the load
+    notes: v.string(), // Additional information
+    weight: v.number(), // Load weight
+    commodity_type: v.string(), // Type of goods
+    num_of_pieces: v.number(), // Number of items
+    miles: v.number(), // Distance to travel
     dimensions: v.string(), // Size measurements
   })
     .index("by_origin", ["origin"])

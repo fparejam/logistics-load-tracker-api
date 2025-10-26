@@ -20,6 +20,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Load Management API - GET /loads
   app.get("/loads", async (req, res) => {
     try {
+      // DEBUG: Log all incoming query parameters
+      console.log("🔍 [GET /loads] Request query:", JSON.stringify(req.query, null, 2));
+      console.log("🔍 [GET /loads] Request headers:", JSON.stringify({
+        "x-api-key": req.headers["x-api-key"] ? "***SET***" : "NOT SET",
+      }, null, 2));
+
       // Check API key
       const apiKey = req.headers["x-api-key"];
       const expectedApiKey = process.env.API_KEY;
@@ -130,8 +136,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
+      // DEBUG: Log processed query arguments
+      console.log("🔍 [GET /loads] Processed query arguments:", JSON.stringify(queryArgs, null, 2));
+
       // Call the Convex query
       const result = await convex.query(api.loads.listLoads, queryArgs);
+
+      // DEBUG: Log result summary
+      console.log(`✅ [GET /loads] Query successful. Returned ${result.items.length} items (total: ${result.total})`);
 
       // Convert timestamps to ISO 8601 strings for the response
       const formattedItems = result.items.map((item) => ({
@@ -147,7 +159,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         offset: result.offset,
       });
     } catch (error) {
-      console.error("Error querying loads:", error);
+      console.error("❌ [GET /loads] Error querying loads:", error);
       res.status(500).json({
         error: "Internal server error",
         message: error instanceof Error ? error.message : "Unknown error",

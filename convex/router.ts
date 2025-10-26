@@ -69,11 +69,11 @@ http.route({
       sort_order?: "asc" | "desc";
     } = {};
 
-    // String filters
-    if (params.has("load_id")) queryArgs.load_id = params.get("load_id")!;
-    if (params.has("origin")) queryArgs.origin = params.get("origin")!;
-    if (params.has("destination")) queryArgs.destination = params.get("destination")!;
-    if (params.has("equipment_type")) queryArgs.equipment_type = params.get("equipment_type")!;
+    // String filters - decode URL-encoded values
+    if (params.has("load_id")) queryArgs.load_id = decodeURIComponent(params.get("load_id")!);
+    if (params.has("origin")) queryArgs.origin = decodeURIComponent(params.get("origin")!);
+    if (params.has("destination")) queryArgs.destination = decodeURIComponent(params.get("destination")!);
+    if (params.has("equipment_type")) queryArgs.equipment_type = decodeURIComponent(params.get("equipment_type")!);
 
     // Date filters - convert ISO strings to timestamps
     if (params.has("pickup_from")) {

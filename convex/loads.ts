@@ -64,14 +64,15 @@ export const listLoads = query({
     if (args.load_id) {
       loads = loads.filter((load) => load.load_id === args.load_id);
     }
+    // String fields use loose matching (case-insensitive partial match)
     if (args.origin) {
-      loads = loads.filter((load) => load.origin === args.origin);
+      loads = loads.filter((load) => load.origin.toLowerCase().includes(args.origin!.toLowerCase()));
     }
     if (args.destination) {
-      loads = loads.filter((load) => load.destination === args.destination);
+      loads = loads.filter((load) => load.destination.toLowerCase().includes(args.destination!.toLowerCase()));
     }
     if (args.equipment_type) {
-      loads = loads.filter((load) => load.equipment_type === args.equipment_type);
+      loads = loads.filter((load) => load.equipment_type.toLowerCase().includes(args.equipment_type!.toLowerCase()));
     }
     if (args.pickup_from !== undefined) {
       loads = loads.filter((load) => load.pickup_datetime >= args.pickup_from!);

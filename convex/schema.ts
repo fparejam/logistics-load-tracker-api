@@ -37,27 +37,6 @@ export default defineSchema({
     .index("by_delivery_datetime", ["delivery_datetime"])
     .index("by_loadboard_rate", ["loadboard_rate"]),
 
-  // Carrier call analytics table
-  carrier_calls: defineTable({
-    call_date: v.number(), // UTC timestamp
-    agent_name: v.string(),
-    equipment_type: v.string(), // dry_van, reefer, flatbed
-    origin_city: v.string(),
-    origin_state: v.string(),
-    destination_city: v.string(),
-    destination_state: v.string(),
-    outcome: v.string(), // won_transferred, no_agreement_price, no_fit_found, ineligible, other
-    negotiation_rounds: v.number(),
-    listed_rate: v.optional(v.number()),
-    final_rate: v.optional(v.number()),
-    sentiment_score: v.number(), // -2 to +2
-    call_duration_seconds: v.optional(v.number()),
-  })
-    .index("by_call_date", ["call_date"])
-    .index("by_agent", ["agent_name"])
-    .index("by_equipment", ["equipment_type"])
-    .index("by_outcome", ["outcome"]),
-
   // Call metrics table for ACME Dashboard
   call_metrics: defineTable({
     timestamp_utc: v.string(), // ISO string

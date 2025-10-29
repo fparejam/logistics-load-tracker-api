@@ -1,7 +1,12 @@
 import { Doc } from "@/convex/_generated/dataModel";
 import { Card, CardContent } from "@/components/ui/card";
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, Info } from "lucide-react";
 import { DashboardFilters } from "@/pages/dashboard";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface KPICardsProps {
   calls: Array<Doc<"carrier_calls">>;
@@ -62,36 +67,42 @@ export function KPICards({ calls }: KPICardsProps) {
       value: totalCalls.toLocaleString(),
       delta: null,
       color: "text-stone-900",
+      tooltip: null,
     },
     {
       label: "Win Rate",
       value: `${winRate.toFixed(1)}%`,
       delta: null,
       color: getWinRateColor(winRate),
+      tooltip: "Percentage of calls that resulted in a successful booking (won and transferred).",
     },
     {
-      label: "Avg Rounds",
+      label: "Avg. Negotiation Rounds",
       value: avgRounds.toFixed(1),
       delta: null,
       color: "text-stone-900",
+      tooltip: "Average number of negotiation exchanges (offers and counteroffers) before reaching a final outcome.",
     },
     {
       label: "% Price Loss",
       value: `${pctPriceDisagreements.toFixed(1)}%`,
       delta: null,
       color: "text-stone-900",
+      tooltip: "Percentage of calls that were lost because the carrier and shipper could not agree on a price.",
     },
     {
       label: "% No Fit",
       value: `${pctNoFit.toFixed(1)}%`,
       delta: null,
       color: "text-stone-900",
+      tooltip: "Percentage of calls where no suitable load match was found (equipment type, timing, or route compatibility issues).",
     },
     {
       label: "Sentiment",
       value: sentimentLabel,
       delta: null,
       color: sentimentColor,
+      tooltip: "Overall tone of the conversation: Positive (favorable interaction), Neutral (standard exchange), or Negative (dissatisfaction or conflict).",
     },
   ];
 
@@ -101,9 +112,21 @@ export function KPICards({ calls }: KPICardsProps) {
         <Card key={index} className="border-stone-200 shadow-sm">
           <CardContent className="p-4">
             <div className="flex flex-col">
-              <span className="text-xs font-medium text-stone-600">
-                {kpi.label}
-              </span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-medium text-stone-600">
+                  {kpi.label}
+                </span>
+                {kpi.tooltip && (
+                  <Tooltip delayDuration={0}>
+                    <TooltipTrigger asChild>
+                      <Info className="size-3 text-stone-400" />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <p className="text-sm">{kpi.tooltip}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
               <span className={`mt-2 text-2xl font-semibold tracking-tight ${kpi.color}`}>
                 {kpi.value}
               </span>

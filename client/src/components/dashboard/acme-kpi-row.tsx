@@ -1,7 +1,12 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { TrendingUp, TrendingDown, Info } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface KPIData {
   total_calls: number;
@@ -62,6 +67,7 @@ export function AcmeKpiRow({ data, isLoading }: AcmeKpiRowProps) {
       value: data.total_calls.toLocaleString(),
       delta: null,
       badge: null,
+      tooltip: null,
     },
     {
       label: "Win Rate",
@@ -74,24 +80,28 @@ export function AcmeKpiRow({ data, isLoading }: AcmeKpiRowProps) {
           {data.win_rate >= 0.35 ? "Good" : data.win_rate >= 0.25 ? "Fair" : "Low"}
         </Badge>
       ),
+      tooltip: "Percentage of calls that resulted in a successful booking (won and transferred).",
     },
     {
-      label: "Avg Rounds",
+      label: "Avg. Negotiation Rounds",
       value: data.avg_negotiation_rounds.toFixed(1),
       delta: null,
       badge: null,
+      tooltip: "Average number of negotiation exchanges (offers and counteroffers) before reaching a final outcome.",
     },
     {
       label: "% Price Disagreements",
       value: `${(data.pct_no_agreement_price * 100).toFixed(1)}%`,
       delta: null,
       badge: null,
+      tooltip: "Percentage of calls that were lost because the carrier and shipper could not agree on a price.",
     },
     {
       label: "% No Fit",
       value: `${(data.pct_no_fit_found * 100).toFixed(1)}%`,
       delta: null,
       badge: null,
+      tooltip: "Percentage of calls where no suitable load match was found (equipment type, timing, or route compatibility issues).",
     },
     {
       label: "Sentiment",
@@ -102,6 +112,7 @@ export function AcmeKpiRow({ data, isLoading }: AcmeKpiRowProps) {
       ),
       delta: null,
       badge: null,
+      tooltip: "Overall tone of the conversation: Positive (favorable interaction), Neutral (standard exchange), or Negative (dissatisfaction or conflict).",
     },
   ];
 
@@ -118,7 +129,19 @@ export function AcmeKpiRow({ data, isLoading }: AcmeKpiRowProps) {
         >
           <CardContent className="p-4">
             <div className="flex flex-col">
-              <span className="text-sm text-gray-500">{kpi.label}</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm text-gray-500">{kpi.label}</span>
+                {kpi.tooltip && (
+                  <Tooltip delayDuration={0}>
+                    <TooltipTrigger asChild>
+                      <Info className="size-3.5 text-gray-400" />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <p className="text-sm">{kpi.tooltip}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
               <span className="mt-2 text-2xl font-semibold tracking-tight text-gray-900">
                 {kpi.value}
               </span>

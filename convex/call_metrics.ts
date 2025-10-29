@@ -153,13 +153,6 @@ export const seedCallMetrics = internalMutation({
       "ineligible",
       "other",
     ];
-    const sentiments: Array<Doc<"call_metrics">["sentiment_tag"]> = [
-      "very_positive",
-      "positive",
-      "neutral",
-      "negative",
-      "very_negative",
-    ];
 
     const sampleCalls: Array<Omit<Doc<"call_metrics">, "_id" | "_creationTime">> = [];
 

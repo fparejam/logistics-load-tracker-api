@@ -30,10 +30,9 @@ export default function UserDropdown({ className }: UserDropdownProps) {
   const { signOut } = useAuthActions();
   const navigate = useNavigate();
 
-  const isLoading = user === undefined;
-
-  if (isLoading) {
-    return <div className="size-8 animate-pulse rounded-full bg-muted" />;
+  // Don't show dropdown if no user (when auth is disabled)
+  if (user === null || user === undefined) {
+    return null;
   }
 
   function UserAvatar({

@@ -97,11 +97,27 @@ export default function ProfilePage() {
     }
   };
 
-  if (!currentUser) {
+  if (currentUser === undefined) {
     return (
       <Layout>
         <div className="flex min-h-screen items-center justify-center">
           <Loader2 className="size-8 animate-spin text-muted-foreground" />
+        </div>
+      </Layout>
+    );
+  }
+
+  if (currentUser === null) {
+    return (
+      <Layout>
+        <div className="flex min-h-screen items-center justify-center">
+          <Card className="max-w-md">
+            <CardContent className="pt-6">
+              <p className="text-center text-muted-foreground">
+                Profile page requires authentication. Authentication is currently disabled.
+              </p>
+            </CardContent>
+          </Card>
         </div>
       </Layout>
     );

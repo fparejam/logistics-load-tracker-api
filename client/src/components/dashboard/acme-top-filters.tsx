@@ -7,14 +7,12 @@ import {
 } from "@/components/ui/select";
 
 export type DateRange = "today" | "last7" | "thisWeek" | "last30" | "custom";
-export type Granularity = "daily" | "weekly";
 
 export interface TopFiltersState {
   dateRange: DateRange;
   equipment: string;
   agent: string;
   outcome: string;
-  granularity: Granularity;
 }
 
 interface TopFiltersProps {

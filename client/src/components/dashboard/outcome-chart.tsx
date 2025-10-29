@@ -1,6 +1,5 @@
 import { Doc } from "@/convex/_generated/dataModel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Granularity } from "@/pages/dashboard";
 import {
   BarChart,
   Bar,
@@ -15,24 +14,13 @@ import { format } from "date-fns";
 
 interface OutcomeChartProps {
   calls: Array<Doc<"carrier_calls">>;
-  granularity: Granularity;
 }
 
-export function OutcomeChart({ calls, granularity }: OutcomeChartProps) {
-  // Group calls by date
+export function OutcomeChart({ calls }: OutcomeChartProps) {
+  // Group calls by date (always daily)
   const groupedData = calls.reduce((acc, call) => {
     const date = new Date(call.call_date);
-    let key: string;
-
-    if (granularity === "daily") {
-      key = format(date, "yyyy-MM-dd");
-    } else {
-      // Weekly - get start of week
-      const dayOfWeek = date.getDay();
-      const startOfWeek = new Date(date);
-      startOfWeek.setDate(date.getDate() - dayOfWeek);
-      key = format(startOfWeek, "yyyy-MM-dd");
-    }
+    const key = format(date, "yyyy-MM-dd");
 
     if (!acc[key]) {
       acc[key] = {
@@ -56,7 +44,7 @@ export function OutcomeChart({ calls, granularity }: OutcomeChartProps) {
   // Convert to array and calculate percentages
   const chartData = Object.values(groupedData)
     .map((day: any) => ({
-      date: format(new Date(day.date), granularity === "daily" ? "MMM d" : "MMM d"),
+      date: format(new Date(day.date), "MMM d"),
       Won: ((day.won_transferred / day.total) * 100).toFixed(1),
       "Price Loss": ((day.no_agreement_price / day.total) * 100).toFixed(1),
       "No Fit": ((day.no_fit_found / day.total) * 100).toFixed(1),

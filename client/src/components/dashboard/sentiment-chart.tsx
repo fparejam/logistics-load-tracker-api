@@ -1,6 +1,5 @@
 import { Doc } from "@/convex/_generated/dataModel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Granularity } from "@/pages/dashboard";
 import {
   Line,
   XAxis,
@@ -15,24 +14,13 @@ import { format } from "date-fns";
 
 interface SentimentChartProps {
   calls: Array<Doc<"carrier_calls">>;
-  granularity: Granularity;
 }
 
-export function SentimentChart({ calls, granularity }: SentimentChartProps) {
-  // Group calls by date and calculate average sentiment
+export function SentimentChart({ calls }: SentimentChartProps) {
+  // Group calls by date and calculate average sentiment (always daily)
   const groupedData = calls.reduce((acc, call) => {
     const date = new Date(call.call_date);
-    let key: string;
-
-    if (granularity === "daily") {
-      key = format(date, "yyyy-MM-dd");
-    } else {
-      // Weekly - get start of week
-      const dayOfWeek = date.getDay();
-      const startOfWeek = new Date(date);
-      startOfWeek.setDate(date.getDate() - dayOfWeek);
-      key = format(startOfWeek, "yyyy-MM-dd");
-    }
+    const key = format(date, "yyyy-MM-dd");
 
     if (!acc[key]) {
       acc[key] = {
@@ -51,7 +39,7 @@ export function SentimentChart({ calls, granularity }: SentimentChartProps) {
   // Convert to array and calculate averages
   const chartData = Object.values(groupedData)
     .map((day: any) => ({
-      date: format(new Date(day.date), granularity === "daily" ? "MMM d" : "MMM d"),
+      date: format(new Date(day.date), "MMM d"),
       sentiment: (day.sentimentSum / day.count).toFixed(2),
       count: day.count,
     }))

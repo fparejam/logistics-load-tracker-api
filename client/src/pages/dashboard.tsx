@@ -11,7 +11,6 @@ import { useState, useMemo } from "react";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export type DateRange = "today" | "last7" | "thisWeek" | "last30" | "custom";
-export type Granularity = "daily" | "weekly";
 
 export interface DashboardFilters {
   dateRange: DateRange;
@@ -20,7 +19,6 @@ export interface DashboardFilters {
   equipment: string;
   agent: string;
   outcome: string;
-  granularity: Granularity;
 }
 
 export default function Dashboard() {
@@ -29,7 +27,6 @@ export default function Dashboard() {
     equipment: "all",
     agent: "all",
     outcome: "all",
-    granularity: "daily",
   });
 
   // Calculate date range
@@ -94,14 +91,6 @@ export default function Dashboard() {
       <div className="min-h-screen bg-white">
         <div className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8">
           {/* Page Header */}
-          <div className="mb-6">
-            <h1 className="text-2xl font-semibold tracking-tight text-stone-900">
-              ACME Logistics Dashboard
-            </h1>
-            <p className="mt-1 text-sm text-stone-600">
-              Monitor inbound carrier calls and booking performance
-            </p>
-          </div>
 
           {/* Filters */}
           <DashboardFilters
@@ -118,8 +107,8 @@ export default function Dashboard() {
 
           {/* Charts Row */}
           <div className="mt-6 grid gap-6 lg:grid-cols-2">
-            <OutcomeChart calls={calls} granularity={filters.granularity} />
-            <SentimentChart calls={calls} granularity={filters.granularity} />
+            <OutcomeChart calls={calls} />
+            <SentimentChart calls={calls} />
           </div>
 
           {/* Map */}

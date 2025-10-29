@@ -31,7 +31,6 @@ export function DashboardTop() {
       equipment: searchParams.get("equipment") || "all",
       agent: searchParams.get("agent") || "all",
       outcome: searchParams.get("outcome") || "all",
-      granularity: (searchParams.get("granularity") as TopFiltersState["granularity"]) || "daily",
     };
   });
 
@@ -42,7 +41,7 @@ export function DashboardTop() {
       equipment: filters.equipment,
       agent: filters.agent,
       outcome: filters.outcome,
-      granularity: filters.granularity,
+      // granularity removed from URL - always defaults to "daily"
     });
     setSearchParams(params, { replace: true });
   }, [filters, setSearchParams]);

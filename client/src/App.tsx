@@ -16,6 +16,7 @@ import { LoadingLoginScreen } from "./pages/loading-login-screen";
 import NotFound from "./pages/not-found";
 import ProfilePage from "./pages/profile";
 import Dashboard from "./pages/dashboard";
+import AcmeDashboard from "./pages/acme-dashboard";
 import ApiTester from "./pages/api-tester";
 
 function AuthenticatedRouter() {
@@ -39,6 +40,9 @@ function AuthenticatedRouter() {
 
         {/* Dashboard page - accessible to all authenticated users */}
         <Route path="/dashboard" element={<Dashboard />} />
+
+        {/* ACME Dashboard page - accessible to all authenticated users */}
+        <Route path="/acme-dashboard" element={<AcmeDashboard />} />
 
         {/* Profile page - accessible to all authenticated users */}
         <Route path="/profile" element={<ProfilePage />} />

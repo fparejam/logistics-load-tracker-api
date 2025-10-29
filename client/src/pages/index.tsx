@@ -2,7 +2,7 @@ import { Layout } from "@/components/layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Code, Database, Key, Filter, ArrowUpDown, TestTube } from "lucide-react";
+import { Code, Database, Key, Filter, ArrowUpDown, TestTube, BarChart3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function Index() {
@@ -23,10 +23,16 @@ export default function Index() {
                 Secure API for managing and tracking logistics shipments
               </p>
             </div>
-            <Button onClick={() => navigate("/api-tester")} size="lg" className="w-full lg:w-auto">
-              <TestTube className="mr-2 size-4" />
-              Try API Tester
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+              <Button onClick={() => navigate("/acme-dashboard")} size="lg" className="w-full sm:w-auto">
+                <BarChart3 className="mr-2 size-4" />
+                ACME Dashboard
+              </Button>
+              <Button onClick={() => navigate("/api-tester")} size="lg" variant="outline" className="w-full sm:w-auto">
+                <TestTube className="mr-2 size-4" />
+                API Tester
+              </Button>
+            </div>
           </div>
         </div>
 

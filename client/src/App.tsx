@@ -1,6 +1,5 @@
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import NotFound from "./pages/not-found";
 import AcmeDashboard from "./pages/acme-dashboard";
 
 export function App() {

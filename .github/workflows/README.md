@@ -33,11 +33,15 @@ To enable automatic deployments, you need to configure the following secrets in 
 - **What it is**: Your Convex deploy key for CI/CD deployments
 - **How to get it**:
   1. Go to your Convex dashboard: https://dashboard.convex.dev
-  2. Navigate to your project
+  2. Navigate to your project (select the **production** deployment, not dev)
   3. Go to `Settings` → `Deploy Keys`
-  4. Click `Create Deploy Key`
-  5. Copy the key and add it as a GitHub secret
-- **Note**: This allows GitHub Actions to deploy Convex functions without interactive login
+  4. Click `Create Deploy Key` for **Production** (not Preview)
+  5. Copy the entire key (starts with something like `prod_` or similar)
+  6. Add it as a GitHub secret with the exact name `CONVEX_DEPLOY_KEY`
+- **Important Notes**:
+  - Must be a **Production Deploy Key**, not a Preview Deploy Key
+  - Copy the entire key exactly as shown (no spaces, no extra characters)
+  - The key should automatically be detected by `convex deploy` when set as `CONVEX_DEPLOY_KEY`
 
 ### 3. Verify Secrets
 After adding all secrets, verify they're set:

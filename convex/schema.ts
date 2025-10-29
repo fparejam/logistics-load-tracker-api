@@ -57,4 +57,32 @@ export default defineSchema({
     .index("by_agent", ["agent_name"])
     .index("by_equipment", ["equipment_type"])
     .index("by_outcome", ["outcome"]),
+
+  // Call metrics table for ACME Dashboard
+  call_metrics: defineTable({
+    timestamp_utc: v.string(), // ISO string
+    agent_name: v.string(),
+    equipment_type: v.string(),
+    outcome_tag: v.union(
+      v.literal("won_transferred"),
+      v.literal("no_agreement_price"),
+      v.literal("no_fit_found"),
+      v.literal("ineligible"),
+      v.literal("other")
+    ),
+    sentiment_tag: v.union(
+      v.literal("very_positive"),
+      v.literal("positive"),
+      v.literal("neutral"),
+      v.literal("negative"),
+      v.literal("very_negative")
+    ),
+    negotiation_rounds: v.number(),
+    loadboard_rate: v.number(),
+    final_rate: v.union(v.number(), v.null()),
+  })
+    .index("by_timestamp", ["timestamp_utc"])
+    .index("by_agent", ["agent_name"])
+    .index("by_equipment", ["equipment_type"])
+    .index("by_outcome", ["outcome_tag"]),
 });

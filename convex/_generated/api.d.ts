@@ -14,6 +14,7 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as auth from "../auth.js";
+import type * as call_metrics from "../call_metrics.js";
 import type * as carrier_calls from "../carrier_calls.js";
 import type * as http from "../http.js";
 import type * as lib_internal_schema from "../lib/internal_schema.js";
@@ -34,6 +35,7 @@ import type * as users from "../users.js";
  */
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  call_metrics: typeof call_metrics;
   carrier_calls: typeof carrier_calls;
   http: typeof http;
   "lib/internal_schema": typeof lib_internal_schema;

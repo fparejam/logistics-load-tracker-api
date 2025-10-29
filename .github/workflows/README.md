@@ -15,10 +15,23 @@ To enable automatic deployments, you need to configure the following secrets in 
 #### `FLY_API_TOKEN`
 - **What it is**: Your Fly.io API token for deploying applications
 - **How to get it**:
+
+  **For personal accounts:**
   ```bash
   flyctl auth token
   ```
-- Or visit: https://fly.io/user/personal_access_tokens
+  Or visit: https://fly.io/user/personal_access_tokens
+
+  **For organizations with SSO (if you get SSO error):**
+  ```bash
+  # First, find your organization name
+  flyctl orgs list
+  
+  # Then create an organization token
+  flyctl tokens create org <organization-name>
+  ```
+  Replace `<organization-name>` with your actual org name.
+
 - Copy the token and add it as a GitHub secret
 
 #### `VITE_CONVEX_URL`

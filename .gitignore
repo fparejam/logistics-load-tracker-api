@@ -68,7 +68,6 @@ supervisord.pid
 .dockerignore
 .docker
 docker-compose.yml
-Dockerfile
 
 # Archives and traces
 **/*.trace

@@ -26,7 +26,17 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Deploy Convex to Production
-        run: bunx convex deploy
+        run: |
+          if [ -z "$CONVEX_DEPLOY_KEY" ]; then
+            echo "❌ CONVEX_DEPLOY_KEY secret is not set"
+            exit 1
+          fi
+          echo "🔑 Deploy key is set"
+          echo "🚀 Deploying to Convex production..."
+          
+          # Ensure Convex uses the deploy key and doesn't try local dev mode
+          export CONVEX_DEPLOY_KEY="$CONVEX_DEPLOY_KEY"
+          bunx convex deploy --yes --typecheck disable
         env:
           CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
         continue-on-error: false

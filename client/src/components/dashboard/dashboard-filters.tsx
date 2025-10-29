@@ -115,27 +115,6 @@ export function DashboardFilters({
             </SelectContent>
           </Select>
         </div>
-
-        {/* Granularity */}
-        <div className="flex-1 min-w-[140px]">
-          <label htmlFor="granularity" className="sr-only">
-            Granularity
-          </label>
-          <Select
-            value={filters.granularity}
-            onValueChange={(value) =>
-              setFilters({ ...filters, granularity: value as Filters["granularity"] })
-            }
-          >
-            <SelectTrigger id="granularity" aria-label="Select granularity">
-              <SelectValue placeholder="Granularity" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="daily">Daily</SelectItem>
-              <SelectItem value="weekly">Weekly</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
       </div>
 
       {/* Applied Filters Pills */}

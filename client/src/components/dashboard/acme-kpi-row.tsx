@@ -26,13 +26,11 @@ export function AcmeKpiRow({ data, isLoading }: AcmeKpiRowProps) {
     return "bg-red-100 text-red-700 border-red-200";
   };
 
-  // Helper to get sentiment emoji and arrow
-  const getSentimentDisplay = (score: number) => {
-    if (score >= 0.7) return { emoji: "😊", arrow: "↑", color: "text-green-600" };
-    if (score >= 0.3) return { emoji: "🙂", arrow: "↗", color: "text-green-600" };
-    if (score >= -0.1) return { emoji: "😐", arrow: "→", color: "text-gray-600" };
-    if (score >= -0.5) return { emoji: "😕", arrow: "↘", color: "text-red-600" };
-    return { emoji: "😞", arrow: "↓", color: "text-red-600" };
+  // Helper to get sentiment text label
+  const getSentimentLabel = (score: number) => {
+    if (score > 0.1) return "positive";
+    if (score < -0.1) return "negative";
+    return "neutral";
   };
 
   if (isLoading || !data) {
@@ -50,7 +48,13 @@ export function AcmeKpiRow({ data, isLoading }: AcmeKpiRowProps) {
     );
   }
 
-  const sentimentDisplay = getSentimentDisplay(data.sentiment_score);
+  const sentimentLabel = getSentimentLabel(data.sentiment_score);
+  const sentimentColor =
+    sentimentLabel === "positive"
+      ? "text-green-600"
+      : sentimentLabel === "negative"
+      ? "text-red-600"
+      : "text-gray-600";
 
   const kpis = [
     {
@@ -92,9 +96,8 @@ export function AcmeKpiRow({ data, isLoading }: AcmeKpiRowProps) {
     {
       label: "Sentiment",
       value: (
-        <span className={sentimentDisplay.color}>
-          {data.sentiment_score.toFixed(2)} {sentimentDisplay.emoji}{" "}
-          {sentimentDisplay.arrow}
+        <span className={sentimentColor} style={{ textTransform: "capitalize" }}>
+          {sentimentLabel}
         </span>
       ),
       delta: null,

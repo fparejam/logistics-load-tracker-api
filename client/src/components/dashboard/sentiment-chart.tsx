@@ -57,20 +57,17 @@ export function SentimentChart({ calls, granularity }: SentimentChartProps) {
     }))
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
+  const getSentimentLabel = (score: number) => {
+    if (score > 0.1) return "positive";
+    if (score < -0.1) return "negative";
+    return "neutral";
+  };
+
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       const sentiment = parseFloat(data.sentiment);
-      const emoji =
-        sentiment >= 1
-          ? "😊"
-          : sentiment >= 0.5
-          ? "🙂"
-          : sentiment >= 0
-          ? "😐"
-          : sentiment >= -0.5
-          ? "😕"
-          : "😞";
+      const sentimentLabel = getSentimentLabel(sentiment);
 
       return (
         <div className="rounded-lg border border-stone-200 bg-white p-3 shadow-lg">
@@ -78,8 +75,19 @@ export function SentimentChart({ calls, granularity }: SentimentChartProps) {
           <div className="space-y-1 text-sm">
             <div className="flex items-center justify-between gap-4">
               <span>Avg Sentiment</span>
-              <span className="font-medium">
-                {data.sentiment} {emoji}
+              <span
+                className="font-medium capitalize"
+                style={{
+                  textTransform: "capitalize",
+                  color:
+                    sentimentLabel === "positive"
+                      ? "#16a34a"
+                      : sentimentLabel === "negative"
+                      ? "#dc2626"
+                      : "#6b7280",
+                }}
+              >
+                {sentimentLabel}
               </span>
             </div>
             <div className="flex items-center justify-between gap-4">

@@ -41,14 +41,20 @@ export function KPICards({ calls }: KPICardsProps) {
     return "text-red-600";
   };
 
-  // Helper to get sentiment emoji
-  const getSentimentEmoji = (score: number) => {
-    if (score >= 1) return "😊";
-    if (score >= 0.5) return "🙂";
-    if (score >= 0) return "😐";
-    if (score >= -0.5) return "😕";
-    return "😞";
+  // Helper to get sentiment text label
+  const getSentimentLabel = (score: number) => {
+    if (score > 0.1) return "positive";
+    if (score < -0.1) return "negative";
+    return "neutral";
   };
+
+  const sentimentLabel = getSentimentLabel(avgSentiment);
+  const sentimentColor =
+    sentimentLabel === "positive"
+      ? "text-green-600"
+      : sentimentLabel === "negative"
+      ? "text-red-600"
+      : "text-gray-600";
 
   const kpis = [
     {
@@ -83,9 +89,9 @@ export function KPICards({ calls }: KPICardsProps) {
     },
     {
       label: "Sentiment",
-      value: `${avgSentiment.toFixed(2)} ${getSentimentEmoji(avgSentiment)}`,
+      value: sentimentLabel,
       delta: null,
-      color: avgSentiment >= 0 ? "text-green-600" : "text-red-600",
+      color: sentimentColor,
     },
   ];
 

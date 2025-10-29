@@ -44,13 +44,6 @@ http.route({
     const url = new URL(req.url);
     const params = url.searchParams;
 
-    // DEBUG: Log all incoming query parameters
-    const debugParams: Record<string, string> = {};
-    params.forEach((value, key) => {
-      debugParams[key] = value;
-    });
-    console.log("🔍 [GET /loads] Request parameters:", JSON.stringify(debugParams, null, 2));
-
     // Build query arguments
     const queryArgs: {
       load_id?: string;
@@ -144,14 +137,8 @@ http.route({
     }
 
     try {
-      // DEBUG: Log processed query arguments
-      console.log("🔍 [GET /loads] Processed query arguments:", JSON.stringify(queryArgs, null, 2));
-
       // Call the query
       const result = await ctx.runQuery(api.loads.listLoads, queryArgs);
-
-      // DEBUG: Log result summary
-      console.log(`✅ [GET /loads] Query successful. Returned ${result.items.length} items (total: ${result.total})`);
 
       // Convert timestamps to ISO 8601 strings for the response
       const formattedItems = result.items.map((item) => ({

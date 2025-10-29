@@ -50,28 +50,34 @@ export function DashboardTop() {
   const { startDate, endDate } = useMemo(() => {
     const now = new Date();
     let start: Date;
-    let end: Date = now;
+    // End date should be end of today (23:59:59.999) to include all calls from today
+    const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
 
     switch (filters.dateRange) {
       case "today":
-        start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
         break;
       case "last7":
         start = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        start.setHours(0, 0, 0, 0);
         break;
       case "thisWeek":
         const dayOfWeek = now.getDay();
         start = new Date(now.getTime() - dayOfWeek * 24 * 60 * 60 * 1000);
+        start.setHours(0, 0, 0, 0);
         break;
       case "last30":
         start = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        start.setHours(0, 0, 0, 0);
         break;
       case "custom":
         // For now, default to last 7 days for custom
         start = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        start.setHours(0, 0, 0, 0);
         break;
       default:
         start = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        start.setHours(0, 0, 0, 0);
     }
 
     return {

@@ -75,3 +75,6 @@ Dockerfile
 **/*.zip
 **/*.tar.gz
 **/*.tgz
+
+# Internal documentation
+internal_documentation/

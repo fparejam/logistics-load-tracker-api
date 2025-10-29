@@ -57,18 +57,10 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on port 8080
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = 8080;
-  server.listen(
-    {
-      port,
-      host: "0.0.0.0",
-      reusePort: false,
-    },
-    () => {
-      log(`EXPRESS + VITE SERVER STARTED ON PORT ${port}`);
-    },
-  );
+  // Use PORT environment variable (set by Fly.io) or default to 8080
+  const port = parseInt(process.env.PORT || "8080", 10);
+  
+  server.listen(port, "0.0.0.0", () => {
+    log(`EXPRESS + VITE SERVER STARTED ON PORT ${port}`);
+  });
 })();

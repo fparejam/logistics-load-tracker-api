@@ -30,8 +30,9 @@ export const getSummary = query({
 
     // Apply filters
     const filteredCalls = allCalls.filter((call) => {
-      // Date filter
-      if (call.timestamp_utc < args.start_date || call.timestamp_utc > args.end_date) {
+      // Date filter - use inclusive boundaries (>= start and <= end)
+      const callDate = call.timestamp_utc;
+      if (callDate < args.start_date || callDate > args.end_date) {
         return false;
       }
 
@@ -95,9 +96,16 @@ export const getSummary = query({
     // Scale from -2..+2 to -1..+1
     const sentimentScore = avgSentiment / 2;
 
-    // Calculate financial metrics (only for calls with final_rate)
+    // Calculate financial metrics
+    // Only compare wins (calls with final_rate) for both listed and final
+    // This ensures fair comparison - we're comparing the same subset of calls
     const callsWithFinalRate = filteredCalls.filter((c) => c.final_rate !== null);
-    const avgListed = filteredCalls.reduce((sum, c) => sum + c.loadboard_rate, 0) / totalCalls;
+    
+    // For accurate comparison, calculate avgListed from the SAME calls that have final_rate (wins only)
+    // This way we're comparing apples to apples: listed rate of wins vs final rate of wins
+    const avgListed = callsWithFinalRate.length > 0
+      ? callsWithFinalRate.reduce((sum, c) => sum + c.loadboard_rate, 0) / callsWithFinalRate.length
+      : 0;
     const avgFinal = callsWithFinalRate.length > 0
       ? callsWithFinalRate.reduce((sum, c) => sum + (c.final_rate as number), 0) / callsWithFinalRate.length
       : 0;
@@ -137,52 +145,90 @@ export const seedCallMetrics = internalMutation({
   args: {},
   returns: v.null(),
   handler: async (ctx) => {
-    // Check if we already have data
-    const existing = await ctx.db.query("call_metrics").take(1);
+    // Clear existing data first to ensure fresh seed
+    const existing = await ctx.db.query("call_metrics").collect();
     if (existing.length > 0) {
-      console.log("Call metrics already seeded, skipping...");
-      return null;
+      for (const call of existing) {
+        await ctx.db.delete(call._id);
+      }
     }
-
     const agents = ["Pablo", "Katya"];
     const equipmentTypes = ["dry_van", "reefer", "flatbed"];
-    const outcomes: Array<Doc<"call_metrics">["outcome_tag"]> = [
-      "won_transferred",
-      "no_agreement_price",
-      "no_fit_found",
-      "ineligible",
-      "other",
-    ];
-
     const sampleCalls: Array<Omit<Doc<"call_metrics">, "_id" | "_creationTime">> = [];
 
     // Generate 60 days of data
     const now = Date.now();
     const daysToGenerate = 60;
 
+    // Outcome distribution:
+    // - 70% wins (won_transferred)
+    // - 30% non-wins: 35% price disagreements (10.5% total) + 65% no fit (19.5% total)
+    const pickOutcome = (): Doc<"call_metrics">["outcome_tag"] => {
+      const rand = Math.random();
+      if (rand < 0.70) return "won_transferred";      // 70% wins
+      if (rand < 0.805) return "no_agreement_price";  // 10.5% price disagreements (0.70 + 0.105 = 0.805)
+      return "no_fit_found";                           // 19.5% no fit (remaining)
+    };
+
+    // Negotiation rounds: avg ~2.1
+    // Distribution: 0 rounds (3%), 1 round (18%), 2 rounds (47%), 3 rounds (32%)
+    // Expected: 0×0.03 + 1×0.18 + 2×0.47 + 3×0.32 = 2.08 ≈ 2.1
+    const getNegotiationRounds = (): number => {
+      const rand = Math.random();
+      if (rand < 0.03) return 0;
+      if (rand < 0.21) return 1;  // 0.03 + 0.18 = 0.21
+      if (rand < 0.68) return 2;  // 0.21 + 0.47 = 0.68
+      return 3;                    // remaining 32%
+    };
+
+    // Sentiment: always positive/very_positive
+    const getSentiment = (outcome: Doc<"call_metrics">["outcome_tag"]): Doc<"call_metrics">["sentiment_tag"] => {
+      if (outcome === "won_transferred") {
+        return Math.random() < 0.85 ? "very_positive" : "positive";
+      } else if (outcome === "no_agreement_price") {
+        const rand = Math.random();
+        if (rand < 0.5) return "positive";
+        if (rand < 0.85) return "neutral";
+        return "very_positive";
+      } else {
+        // no_fit_found
+        const rand = Math.random();
+        if (rand < 0.6) return "positive";
+        if (rand < 0.9) return "very_positive";
+        return "neutral";
+      }
+    };
+
+    // Uplift for wins: avg ~10% higher than listed rate
+    // Distribution: 15% at 5-8%, 60% at 8-12%, 25% at 12-18%
+    // Expected: 0.15×6.5 + 0.60×10 + 0.25×15 = 10.725 ≈ 10%
+    const calculateFinalRate = (listedRate: number): number => {
+      const rand = Math.random();
+      let upliftPercent: number;
+      if (rand < 0.15) {
+        upliftPercent = 5 + Math.random() * 3;      // 5-8%
+      } else if (rand < 0.75) {
+        upliftPercent = 8 + Math.random() * 4;      // 8-12%
+      } else {
+        upliftPercent = 12 + Math.random() * 6;      // 12-18%
+      }
+      const finalRate = Math.round(listedRate * (1 + upliftPercent / 100));
+      // Safety: ensure final > listed
+      return finalRate > listedRate ? finalRate : Math.round(listedRate * 1.01) + 1;
+    };
+
+    // Generate calls
     for (let day = 0; day < daysToGenerate; day++) {
       const callsPerDay = Math.floor(Math.random() * 8) + 5; // 5-12 calls per day
 
       for (let i = 0; i < callsPerDay; i++) {
         const agent = agents[Math.floor(Math.random() * agents.length)];
         const equipment = equipmentTypes[Math.floor(Math.random() * equipmentTypes.length)];
-        const outcome = outcomes[Math.floor(Math.random() * outcomes.length)];
-
-        // Sentiment correlates with outcome
-        let sentiment: Doc<"call_metrics">["sentiment_tag"];
-        if (outcome === "won_transferred") {
-          sentiment = Math.random() > 0.3 ? "positive" : "very_positive";
-        } else if (outcome === "no_agreement_price") {
-          sentiment = Math.random() > 0.5 ? "negative" : "very_negative";
-        } else {
-          sentiment = "neutral";
-        }
-
-        const loadboardRate = Math.floor(Math.random() * 2000) + 500;
-        const finalRate = outcome === "won_transferred"
-          ? loadboardRate + Math.floor(Math.random() * 200) - 100
-          : null;
-
+        const outcome = pickOutcome();
+        const sentiment = getSentiment(outcome);
+        const negotiationRounds = getNegotiationRounds();
+        const loadboardRate = Math.floor(Math.random() * 2000) + 500; // $500-$2,499
+        const finalRate = outcome === "won_transferred" ? calculateFinalRate(loadboardRate) : null;
         const callDate = new Date(now - day * 24 * 60 * 60 * 1000 - Math.random() * 24 * 60 * 60 * 1000);
 
         sampleCalls.push({
@@ -191,7 +237,7 @@ export const seedCallMetrics = internalMutation({
           equipment_type: equipment,
           outcome_tag: outcome,
           sentiment_tag: sentiment,
-          negotiation_rounds: Math.floor(Math.random() * 5) + 1,
+          negotiation_rounds: negotiationRounds,
           loadboard_rate: loadboardRate,
           final_rate: finalRate,
         });
@@ -203,8 +249,154 @@ export const seedCallMetrics = internalMutation({
       await ctx.db.insert("call_metrics", call);
     }
 
-    console.log(`Seeded ${sampleCalls.length} call metrics successfully`);
+    // Verify the data was inserted
+    const verifyCount = await ctx.db.query("call_metrics").collect();
+    const outcomeCounts = {
+      won_transferred: 0,
+      no_agreement_price: 0,
+      no_fit_found: 0,
+      ineligible: 0,
+      other: 0,
+    };
+    for (const call of verifyCount) {
+      outcomeCounts[call.outcome_tag]++;
+    }
     return null;
+  },
+});
+
+/**
+ * Query to debug/inspect call metrics data
+ */
+export const inspectData = query({
+  args: {},
+  returns: v.object({
+    total_calls: v.number(),
+    outcome_counts: v.object({
+      won_transferred: v.number(),
+      no_agreement_price: v.number(),
+      no_fit_found: v.number(),
+      ineligible: v.number(),
+      other: v.number(),
+    }),
+    win_rate: v.number(),
+    avg_negotiation_rounds: v.number(),
+    price_disagreements_pct: v.number(),
+    no_fit_pct: v.number(),
+    sentiment_counts: v.object({
+      very_positive: v.number(),
+      positive: v.number(),
+      neutral: v.number(),
+      negative: v.number(),
+      very_negative: v.number(),
+    }),
+    avg_listed: v.number(),
+    avg_final: v.number(),
+    avg_uplift_pct: v.number(),
+    date_range: v.object({
+      oldest: v.string(),
+      newest: v.string(),
+    }),
+    sample_calls: v.array(v.object({
+      timestamp: v.string(),
+      outcome: v.string(),
+      sentiment: v.string(),
+      rounds: v.number(),
+      listed: v.number(),
+      final: v.union(v.number(), v.null()),
+    })),
+  }),
+  handler: async (ctx) => {
+    const allCalls = await ctx.db.query("call_metrics").collect();
+    
+    if (allCalls.length === 0) {
+      return {
+        total_calls: 0,
+        outcome_counts: { won_transferred: 0, no_agreement_price: 0, no_fit_found: 0, ineligible: 0, other: 0 },
+        win_rate: 0,
+        avg_negotiation_rounds: 0,
+        price_disagreements_pct: 0,
+        no_fit_pct: 0,
+        sentiment_counts: { very_positive: 0, positive: 0, neutral: 0, negative: 0, very_negative: 0 },
+        avg_listed: 0,
+        avg_final: 0,
+        avg_uplift_pct: 0,
+        date_range: { oldest: "", newest: "" },
+        sample_calls: [],
+      };
+    }
+
+    const outcomeCounts = {
+      won_transferred: 0,
+      no_agreement_price: 0,
+      no_fit_found: 0,
+      ineligible: 0,
+      other: 0,
+    };
+
+    const sentimentCounts = {
+      very_positive: 0,
+      positive: 0,
+      neutral: 0,
+      negative: 0,
+      very_negative: 0,
+    };
+
+    let totalRounds = 0;
+    let totalListed = 0;
+    let totalFinal = 0;
+    let winsCount = 0;
+    const timestamps: string[] = [];
+
+    for (const call of allCalls) {
+      outcomeCounts[call.outcome_tag]++;
+      sentimentCounts[call.sentiment_tag]++;
+      totalRounds += call.negotiation_rounds;
+      timestamps.push(call.timestamp_utc);
+      
+      if (call.outcome_tag === "won_transferred" && call.final_rate !== null) {
+        totalListed += call.loadboard_rate;
+        totalFinal += call.final_rate;
+        winsCount++;
+      }
+    }
+
+    const winRate = outcomeCounts.won_transferred / allCalls.length;
+    const avgRounds = totalRounds / allCalls.length;
+    const priceDisagreementsPct = outcomeCounts.no_agreement_price / allCalls.length;
+    const noFitPct = outcomeCounts.no_fit_found / allCalls.length;
+
+    const avgListed = winsCount > 0 ? totalListed / winsCount : 0;
+    const avgFinal = winsCount > 0 ? totalFinal / winsCount : 0;
+    const avgUpliftPct = avgListed > 0 ? (avgFinal - avgListed) / avgListed : 0;
+
+    timestamps.sort();
+    const sampleCalls = allCalls.slice(0, 5).map(c => ({
+      timestamp: c.timestamp_utc,
+      outcome: c.outcome_tag,
+      sentiment: c.sentiment_tag,
+      rounds: c.negotiation_rounds,
+      listed: c.loadboard_rate,
+      final: c.final_rate,
+    }));
+
+    return {
+      total_calls: allCalls.length,
+      outcome_counts: outcomeCounts,
+      win_rate: winRate,
+      avg_negotiation_rounds: avgRounds,
+      price_disagreements_pct: priceDisagreementsPct,
+      no_fit_pct: noFitPct,
+      sentiment_counts: sentimentCounts,
+      avg_listed: avgListed,
+      avg_final: avgFinal,
+      avg_uplift_pct: avgUpliftPct,
+      date_range: {
+        oldest: timestamps[0] || "",
+        newest: timestamps[timestamps.length - 1] || "",
+      },
+      sample_calls: sampleCalls,
+    };
   },
 });
 

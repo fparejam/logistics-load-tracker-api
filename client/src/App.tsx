@@ -15,6 +15,7 @@ import AdminPage from "./pages/admin";
 import { LoadingLoginScreen } from "./pages/loading-login-screen";
 import NotFound from "./pages/not-found";
 import ProfilePage from "./pages/profile";
+import Dashboard from "./pages/dashboard";
 import ApiTester from "./pages/api-tester";
 
 function AuthenticatedRouter() {
@@ -35,6 +36,9 @@ function AuthenticatedRouter() {
 
         {/* API Tester page */}
         <Route path="/api-tester" element={<ApiTester />} />
+
+        {/* Dashboard page - accessible to all authenticated users */}
+        <Route path="/dashboard" element={<Dashboard />} />
 
         {/* Profile page - accessible to all authenticated users */}
         <Route path="/profile" element={<ProfilePage />} />

@@ -6,9 +6,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Share2 } from "lucide-react";
-import { toast } from "sonner";
 
 interface DashboardFiltersProps {
   filters: Filters;
@@ -21,19 +18,6 @@ export function DashboardFilters({
   setFilters,
   agents,
 }: DashboardFiltersProps) {
-  const handleShareView = () => {
-    const params = new URLSearchParams({
-      dateRange: filters.dateRange,
-      equipment: filters.equipment,
-      agent: filters.agent,
-      outcome: filters.outcome,
-      granularity: filters.granularity,
-    });
-    
-    const url = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
-    navigator.clipboard.writeText(url);
-    toast.success("Link copied to clipboard");
-  };
 
   return (
     <div className="rounded-lg border border-stone-200 bg-white p-4 shadow-sm">
@@ -152,17 +136,6 @@ export function DashboardFilters({
             </SelectContent>
           </Select>
         </div>
-
-        {/* Share Button */}
-        <Button
-          variant="outline"
-          size="default"
-          onClick={handleShareView}
-          aria-label="Share current view"
-        >
-          <Share2 className="mr-2 size-4" />
-          Share
-        </Button>
       </div>
 
       {/* Applied Filters Pills */}

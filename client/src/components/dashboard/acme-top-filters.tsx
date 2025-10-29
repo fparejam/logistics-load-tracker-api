@@ -5,9 +5,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Share2 } from "lucide-react";
-import { toast } from "sonner";
 
 export type DateRange = "today" | "last7" | "thisWeek" | "last30" | "custom";
 export type Granularity = "daily" | "weekly";
@@ -33,19 +30,6 @@ export function AcmeTopFilters({
   agents,
   isLoading = false,
 }: TopFiltersProps) {
-  const handleShareView = () => {
-    const params = new URLSearchParams({
-      dateRange: filters.dateRange,
-      equipment: filters.equipment,
-      agent: filters.agent,
-      outcome: filters.outcome,
-      granularity: filters.granularity,
-    });
-
-    const url = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
-    navigator.clipboard.writeText(url);
-    toast.success("Link copied to clipboard");
-  };
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
@@ -163,18 +147,6 @@ export function AcmeTopFilters({
             </SelectContent>
           </Select>
         </div>
-
-        {/* Share Button */}
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={handleShareView}
-          disabled={isLoading}
-          aria-label="Share current view"
-          title="Copy shareable link"
-        >
-          <Share2 className="size-4" />
-        </Button>
       </div>
     </div>
   );

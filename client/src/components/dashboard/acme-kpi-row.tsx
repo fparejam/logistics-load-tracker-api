@@ -80,28 +80,28 @@ export function AcmeKpiRow({ data, isLoading }: AcmeKpiRowProps) {
           {data.win_rate >= 0.35 ? "Good" : data.win_rate >= 0.25 ? "Fair" : "Low"}
         </Badge>
       ),
-      tooltip: "Percentage of calls that resulted in a successful booking (won and transferred).",
+      tooltip: "Calls that resulted in successful bookings.",
     },
     {
       label: "Avg. Negotiation Rounds",
       value: data.avg_negotiation_rounds.toFixed(1),
       delta: null,
       badge: null,
-      tooltip: "Average number of negotiation exchanges (offers and counteroffers) before reaching a final outcome.",
+      tooltip: "Average negotiation exchanges per call.",
     },
     {
       label: "% Price Disagreements",
       value: `${(data.pct_no_agreement_price * 100).toFixed(1)}%`,
       delta: null,
       badge: null,
-      tooltip: "Percentage of calls that were lost because the carrier and shipper could not agree on a price.",
+      tooltip: "Calls lost due to price disagreements.",
     },
     {
       label: "% No Fit",
       value: `${(data.pct_no_fit_found * 100).toFixed(1)}%`,
       delta: null,
       badge: null,
-      tooltip: "Percentage of calls where no suitable load match was found (equipment type, timing, or route compatibility issues).",
+      tooltip: "Calls with no suitable match found.",
     },
     {
       label: "Sentiment",
@@ -112,7 +112,6 @@ export function AcmeKpiRow({ data, isLoading }: AcmeKpiRowProps) {
       ),
       delta: null,
       badge: null,
-      tooltip: "Overall tone of the conversation: Positive (favorable interaction), Neutral (standard exchange), or Negative (dissatisfaction or conflict).",
     },
   ];
 

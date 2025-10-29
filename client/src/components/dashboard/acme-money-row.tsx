@@ -1,5 +1,11 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Info } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface MoneyData {
   avg_listed: number;
@@ -41,16 +47,19 @@ export function AcmeMoneyRow({ data, isLoading }: AcmeMoneyRowProps) {
       label: "Avg Listed",
       value: `$${Math.round(data.avg_listed).toLocaleString()}`,
       color: "text-gray-900",
+      tooltip: null,
     },
     {
       label: "Avg Final",
       value: `$${Math.round(data.avg_final).toLocaleString()}`,
       color: "text-gray-900",
+      tooltip: null,
     },
     {
       label: "Avg Uplift %",
       value: `${data.avg_uplift_pct >= 0 ? "+" : ""}${(data.avg_uplift_pct * 100).toFixed(1)}%`,
       color: getUpliftColor(data.avg_uplift_pct),
+      tooltip: "Difference between final negotiated and listed rates. The lower the better.",
     },
   ];
 
@@ -67,7 +76,19 @@ export function AcmeMoneyRow({ data, isLoading }: AcmeMoneyRowProps) {
         >
           <CardContent className="p-4">
             <div className="flex flex-col">
-              <span className="text-sm text-gray-500">{metric.label}</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm text-gray-500">{metric.label}</span>
+                {metric.tooltip && (
+                  <Tooltip delayDuration={0}>
+                    <TooltipTrigger asChild>
+                      <Info className="size-3.5 text-gray-400" />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <p className="text-sm">{metric.tooltip}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
               <span
                 className={`mt-2 text-2xl font-semibold tracking-tight ${metric.color}`}
               >

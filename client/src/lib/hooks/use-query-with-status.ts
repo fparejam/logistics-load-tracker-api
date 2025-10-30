@@ -15,10 +15,9 @@ import { useQueries } from "convex/react";
   Example usage:
   ```typescript
   const { data, status, error, isLoading, isSuccess, isError } = useQueryWithStatus(
-    api.users.list, 
-    { limit: 10 }
+    api.call_metrics.getSummary, 
+    { start_date: "2024-01-01", end_date: "2024-12-31" }
   );
-
   ```
  */
 export const useQueryWithStatus = makeUseQueryWithStatus(useQueries);

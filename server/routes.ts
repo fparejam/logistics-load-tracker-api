@@ -155,6 +155,167 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Call Metrics API - POST /call-metrics
+  app.post("/call-metrics", async (req, res) => {
+    try {
+      // Check API key
+      const apiKey = req.headers["x-api-key"];
+      const expectedApiKey = process.env.API_KEY;
+
+      if (!expectedApiKey) {
+        return res.status(500).json({
+          error: "Server configuration error: API_KEY not set",
+        });
+      }
+
+      if (!apiKey || apiKey !== expectedApiKey) {
+        return res.status(401).json({
+          error: "Unauthorized: Invalid or missing API key",
+        });
+      }
+
+      // Validate request body
+      const body = req.body;
+      if (!body || typeof body !== "object") {
+        return res.status(400).json({
+          error: "Validation error",
+          details: "Request body must be a JSON object",
+        });
+      }
+
+      // Required fields
+      const requiredFields = [
+        "agent_name",
+        "equipment_type",
+        "outcome_tag",
+        "sentiment_tag",
+        "negotiation_rounds",
+        "loadboard_rate",
+      ];
+      for (const field of requiredFields) {
+        if (!(field in body)) {
+          return res.status(400).json({
+            error: "Validation error",
+            details: `Missing required field: ${field}`,
+          });
+        }
+      }
+
+      // Validate outcome_tag
+      const validOutcomes = [
+        "won_transferred",
+        "no_agreement_price",
+        "no_fit_found",
+        "ineligible",
+        "other",
+      ];
+      if (!validOutcomes.includes(body.outcome_tag)) {
+        return res.status(400).json({
+          error: "Validation error",
+          details: `Invalid outcome_tag. Must be one of: ${validOutcomes.join(", ")}`,
+        });
+      }
+
+      // Validate sentiment_tag
+      const validSentiments = [
+        "very_positive",
+        "positive",
+        "neutral",
+        "negative",
+        "very_negative",
+      ];
+      if (!validSentiments.includes(body.sentiment_tag)) {
+        return res.status(400).json({
+          error: "Validation error",
+          details: `Invalid sentiment_tag. Must be one of: ${validSentiments.join(", ")}`,
+        });
+      }
+
+      // Validate final_rate logic
+      if (body.outcome_tag === "won_transferred") {
+        if (body.final_rate === null || body.final_rate === undefined) {
+          return res.status(400).json({
+            error: "Validation error",
+            details: "final_rate must be provided when outcome_tag is 'won_transferred'",
+          });
+        }
+        if (typeof body.final_rate !== "number" || body.final_rate <= 0) {
+          return res.status(400).json({
+            error: "Validation error",
+            details: "final_rate must be a positive number when outcome_tag is 'won_transferred'",
+          });
+        }
+      } else {
+        // For non-wins, final_rate must be null
+        if (body.final_rate !== null && body.final_rate !== undefined) {
+          return res.status(400).json({
+            error: "Validation error",
+            details: "final_rate must be null when outcome_tag is not 'won_transferred'",
+          });
+        }
+      }
+
+      // Validate other fields
+      if (typeof body.agent_name !== "string" || body.agent_name.trim() === "") {
+        return res.status(400).json({
+          error: "Validation error",
+          details: "agent_name must be a non-empty string",
+        });
+      }
+
+      if (typeof body.equipment_type !== "string" || body.equipment_type.trim() === "") {
+        return res.status(400).json({
+          error: "Validation error",
+          details: "equipment_type must be a non-empty string",
+        });
+      }
+
+      if (
+        typeof body.negotiation_rounds !== "number" ||
+        body.negotiation_rounds < 0 ||
+        !Number.isInteger(body.negotiation_rounds)
+      ) {
+        return res.status(400).json({
+          error: "Validation error",
+          details: "negotiation_rounds must be a non-negative integer",
+        });
+      }
+
+      if (typeof body.loadboard_rate !== "number" || body.loadboard_rate <= 0) {
+        return res.status(400).json({
+          error: "Validation error",
+          details: "loadboard_rate must be a positive number",
+        });
+      }
+
+      // Generate timestamp automatically (don't allow client to set it)
+      const timestamp = new Date().toISOString();
+
+      // Call the Convex mutation
+      const id = await convex.mutation(api.call_metrics.createCallMetric, {
+        timestamp_utc: timestamp,
+        agent_name: body.agent_name.trim(),
+        equipment_type: body.equipment_type.trim(),
+        outcome_tag: body.outcome_tag,
+        sentiment_tag: body.sentiment_tag,
+        negotiation_rounds: body.negotiation_rounds,
+        loadboard_rate: body.loadboard_rate,
+        final_rate: body.outcome_tag === "won_transferred" ? body.final_rate : null,
+      });
+
+      res.status(201).json({
+        id,
+        message: "Call metric created successfully",
+      });
+    } catch (error) {
+      console.error("Error creating call metric:", error);
+      res.status(500).json({
+        error: "Internal server error",
+        message: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  });
+
   // Default to using CONVEX for API routes, prefix with /api.
   return createServer(app);
 }

@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { query, internalMutation } from "./_generated/server";
+import { query, internalMutation, mutation } from "./_generated/server";
 import { Doc } from "./_generated/dataModel";
 import { OutcomeTag, SentimentTag } from "./types";
 
@@ -398,6 +398,61 @@ export const inspectData = query({
       },
       sample_calls: sampleCalls,
     };
+  },
+});
+
+/**
+ * Public mutation to create a single call metric
+ * Used by API endpoint to create call metrics
+ */
+export const createCallMetric = mutation({
+  args: {
+    timestamp_utc: v.optional(v.string()),
+    agent_name: v.string(),
+    equipment_type: v.string(),
+    outcome_tag: v.union(
+      v.literal(OutcomeTag.WonTransferred),
+      v.literal(OutcomeTag.NoAgreementPrice),
+      v.literal(OutcomeTag.NoFitFound),
+      v.literal(OutcomeTag.Ineligible),
+      v.literal(OutcomeTag.Other)
+    ),
+    sentiment_tag: v.union(
+      v.literal(SentimentTag.VeryPositive),
+      v.literal(SentimentTag.Positive),
+      v.literal(SentimentTag.Neutral),
+      v.literal(SentimentTag.Negative),
+      v.literal(SentimentTag.VeryNegative)
+    ),
+    negotiation_rounds: v.number(),
+    loadboard_rate: v.number(),
+    final_rate: v.union(v.number(), v.null()),
+  },
+  returns: v.id("call_metrics"),
+  handler: async (ctx, args) => {
+    // Validate final_rate based on outcome
+    if (args.outcome_tag === OutcomeTag.WonTransferred && args.final_rate === null) {
+      throw new Error("final_rate must be provided when outcome_tag is 'won_transferred'");
+    }
+    if (args.outcome_tag !== OutcomeTag.WonTransferred && args.final_rate !== null) {
+      throw new Error("final_rate must be null when outcome_tag is not 'won_transferred'");
+    }
+
+    // Use provided timestamp or generate current UTC timestamp
+    const timestamp = args.timestamp_utc || new Date().toISOString();
+
+    const id = await ctx.db.insert("call_metrics", {
+      timestamp_utc: timestamp,
+      agent_name: args.agent_name,
+      equipment_type: args.equipment_type,
+      outcome_tag: args.outcome_tag,
+      sentiment_tag: args.sentiment_tag,
+      negotiation_rounds: args.negotiation_rounds,
+      loadboard_rate: args.loadboard_rate,
+      final_rate: args.final_rate,
+    });
+
+    return id;
   },
 });
 

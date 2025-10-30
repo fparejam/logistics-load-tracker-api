@@ -38,7 +38,6 @@
         "@radix-ui/react-toggle-group": "^1.1.0",
         "@radix-ui/react-tooltip": "^1.2.7",
         "@radix-ui/react-use-controllable-state": "^1.2.2",
-        "@rebolt-ai/convex": "0.1.11",
         "@tiptap/core": "^2.12.2",
         "@tiptap/extension-character-count": "^2.12.2",
         "@tiptap/extension-code-block-lowlight": "^2.12.2",
@@ -71,11 +70,13 @@
         "fuse.js": "^7.0.0",
         "input-otp": "^1.4.1",
         "jotai": "^2.13.0",
+        "lightningcss": "^1.30.1",
         "lodash.throttle": "^4.1.1",
         "lowlight": "^3.2.0",
         "lucide-react": "^0.536.0",
         "media-chrome": "^4.7.1",
         "motion": "^11.15.0",
+        "nanoid": "^3.3.11",
         "next-themes": "^0.4.6",
         "posthog-js": "^1.260.1",
         "radix-ui": "^1.4.2",
@@ -98,7 +99,6 @@
       },
       "devDependencies": {
         "@eslint/js": "^9.21.0",
-        "@rebolt-ai/vite-plugin-overlay": "0.3.1",
         "@tailwindcss/vite": "^4.0.14",
         "@types/color": "^3.0.6",
         "@types/express": "^5.0.3",
@@ -619,10 +619,6 @@
     "@radix-ui/react-visually-hidden": ["@radix-ui/react-visually-hidden@1.2.3", "", { "dependencies": { "@radix-ui/react-primitive": "2.1.3" }, "peerDependencies": { "@types/react": "*", "@types/react-dom": "*", "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc", "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc" }, "optionalPeers": ["@types/react", "@types/react-dom"] }, "sha512-pzJq12tEaaIhqjbzpCuv/OypJY/BPavOofm+dbab+MHLajy277+1lLm6JFcGgF5eskJ6mquGirhXY2GD/8u8Ug=="],
 
     "@radix-ui/rect": ["@radix-ui/rect@1.1.1", "", {}, "sha512-HPwpGIzkl28mWyZqG52jiqDJ12waP11Pa1lGoiyUkIEuMLBP0oeK/C89esbXrxsky5we7dfd8U58nm0SgAWpVw=="],
-
-    "@rebolt-ai/convex": ["@rebolt-ai/convex@0.1.11", "", { "peerDependencies": { "convex": "^1.25.4", "convex-helpers": "^0.1.100" } }, "sha512-gNmJIywsbu7KurntZ9CYtVGADFCxt9d2Tl/XfjGdT+mT/W5IJMkqiObcbUETe+cOIjCKG7IsPAFoEgpMgjVTTg=="],
-
-    "@rebolt-ai/vite-plugin-overlay": ["@rebolt-ai/vite-plugin-overlay@0.3.1", "", { "dependencies": { "@jridgewell/trace-mapping": "^0.3.29" }, "peerDependencies": { "vite": ">=5" } }, "sha512-hRgC14md/6Hvd8Qb48pU67kl1k8v+IQSqNl8XSajjB5HWe3L2nn1gTWru6vuxOrqSwl4Wh0WS/PfpR8S08sfUw=="],
 
     "@remirror/core-constants": ["@remirror/core-constants@3.0.0", "", {}, "sha512-42aWfPrimMfDKDi4YegyS7x+/0tlzaqwPQCULLanv3DMIlu96KTJR0fM5isWX2UViOqlGnX6YFgqWepcX+XMNg=="],
 

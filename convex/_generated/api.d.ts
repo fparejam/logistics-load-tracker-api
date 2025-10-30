@@ -19,7 +19,6 @@ import type * as http from "../http.js";
 import type * as lib_internal_schema from "../lib/internal_schema.js";
 import type * as lib_roles from "../lib/roles.js";
 import type * as loads from "../loads.js";
-import type * as rebolt from "../rebolt.js";
 import type * as router from "../router.js";
 import type * as seed from "../seed.js";
 import type * as types from "../types.js";
@@ -40,7 +39,6 @@ declare const fullApi: ApiFromModules<{
   "lib/internal_schema": typeof lib_internal_schema;
   "lib/roles": typeof lib_roles;
   loads: typeof loads;
-  rebolt: typeof rebolt;
   router: typeof router;
   seed: typeof seed;
   types: typeof types;

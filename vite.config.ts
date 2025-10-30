@@ -1,4 +1,3 @@
-import reboltOverlay from "@rebolt-ai/vite-plugin-overlay";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import path from "node:path";
@@ -11,8 +10,6 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
-    // @ts-ignore
-    ...(process.env.NODE_ENV === "development" ? [reboltOverlay()] : []),
   ],
   resolve: {
     alias: {

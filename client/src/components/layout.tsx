@@ -1,6 +1,5 @@
 import { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { AcmeLogo } from "./acme-logo";
 
 export function Layout({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
@@ -15,7 +14,7 @@ export function Layout({ children }: { children: ReactNode }) {
             onClick={() => navigate("/")}
             className="flex items-center space-x-2"
           >
-            <AcmeLogo className="size-6" />
+            <img src="/og-image.png" alt="ACME Logo" className="h-6 w-auto object-contain" />
             <span className="text-base font-medium text-foreground">
               ACME Logistics
             </span>

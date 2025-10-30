@@ -1,17 +1,4 @@
-/**
- * DashboardTop - ACME Dashboard Top Section
- * 
- * This component renders the top section of the ACME Dashboard including:
- * - TopFilters: Date range, Equipment, Agent, Outcome, Granularity controls
- * - KpiRow: 6 KPI cards (Total Calls, Win Rate, Avg Rounds, % Price Disagreements, % No Fit, Sentiment)
- * - MoneyRow: 3 financial cards (Avg Listed, Avg Final, Avg Uplift %)
- * 
- * Features:
- * - Accessible (WCAG AA): labels, keyboard focus, aria-live on loading
- * - URL persistence: filters saved to query string for shareable links
- * - Responsive: mobile-friendly layout
- * - Loading states: skeleton loaders while fetching data
- */
+
 
 import { AcmeTopFilters, TopFiltersState } from "./acme-top-filters";
 import { AcmeKpiRow } from "./acme-kpi-row";

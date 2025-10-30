@@ -2,8 +2,6 @@ export const OutcomeTag = {
   WonTransferred: "won_transferred",
   NoAgreementPrice: "no_agreement_price",
   NoFitFound: "no_fit_found",
-  Ineligible: "ineligible",
-  Other: "other",
 } as const;
 
 export type OutcomeTag = (typeof OutcomeTag)[keyof typeof OutcomeTag];
@@ -12,8 +10,6 @@ export const outcomeTagValues: OutcomeTag[] = [
   OutcomeTag.WonTransferred,
   OutcomeTag.NoAgreementPrice,
   OutcomeTag.NoFitFound,
-  OutcomeTag.Ineligible,
-  OutcomeTag.Other,
 ];
 
 export const SentimentTag = {

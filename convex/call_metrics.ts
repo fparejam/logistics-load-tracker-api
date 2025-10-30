@@ -127,6 +127,328 @@ export const getSummary = query({
 });
 
 /**
+ * Query to get outcome breakdown with counts for each outcome type
+ */
+export const getOutcomeBreakdown = query({
+  args: {
+    start_date: v.string(), // ISO string
+    end_date: v.string(), // ISO string
+    equipment_type: v.optional(v.string()),
+    agent_name: v.optional(v.string()),
+    outcome_tag: v.optional(v.string()),
+  },
+  returns: v.object({
+    won_transferred: v.number(),
+    no_agreement_price: v.number(),
+    no_fit_found: v.number(),
+    total: v.number(),
+  }),
+  handler: async (ctx, args) => {
+    let allCalls = await ctx.db.query("call_metrics").collect();
+
+    // Apply filters (same logic as getSummary)
+    const filteredCalls = allCalls.filter((call) => {
+      // Date filter - use inclusive boundaries (>= start and <= end)
+      const callDate = call.timestamp_utc;
+      if (callDate < args.start_date || callDate > args.end_date) {
+        return false;
+      }
+
+      // Equipment filter
+      if (args.equipment_type && args.equipment_type !== "all" && call.equipment_type !== args.equipment_type) {
+        return false;
+      }
+
+      // Agent filter
+      if (args.agent_name && args.agent_name !== "all" && call.agent_name !== args.agent_name) {
+        return false;
+      }
+
+      // Outcome filter
+      if (args.outcome_tag && args.outcome_tag !== "all" && call.outcome_tag !== args.outcome_tag) {
+        return false;
+      }
+
+      return true;
+    });
+
+    // Count outcomes
+    const wonCount = filteredCalls.filter((c) => c.outcome_tag === OutcomeTag.WonTransferred).length;
+    const priceDisagreementCount = filteredCalls.filter((c) => c.outcome_tag === OutcomeTag.NoAgreementPrice).length;
+    const noFitCount = filteredCalls.filter((c) => c.outcome_tag === OutcomeTag.NoFitFound).length;
+    const total = filteredCalls.length;
+
+    return {
+      won_transferred: wonCount,
+      no_agreement_price: priceDisagreementCount,
+      no_fit_found: noFitCount,
+      total,
+    };
+  },
+});
+
+/**
+ * Query to get wins segmented by negotiation rounds
+ */
+export const getWinsByRounds = query({
+  args: {
+    start_date: v.string(), // ISO string
+    end_date: v.string(), // ISO string
+    equipment_type: v.optional(v.string()),
+    agent_name: v.optional(v.string()),
+    outcome_tag: v.optional(v.string()),
+  },
+  returns: v.object({
+    one_round_wins: v.number(), // 1 round
+    two_rounds_wins: v.number(), // 2 rounds
+    three_rounds_wins: v.number(), // 3 rounds
+    total_wins: v.number(),
+  }),
+  handler: async (ctx, args) => {
+    let allCalls = await ctx.db.query("call_metrics").collect();
+
+    // Apply filters (same logic as getSummary)
+    const filteredCalls = allCalls.filter((call) => {
+      // Date filter
+      const callDate = call.timestamp_utc;
+      if (callDate < args.start_date || callDate > args.end_date) {
+        return false;
+      }
+
+      // Equipment filter
+      if (args.equipment_type && args.equipment_type !== "all" && call.equipment_type !== args.equipment_type) {
+        return false;
+      }
+
+      // Agent filter
+      if (args.agent_name && args.agent_name !== "all" && call.agent_name !== args.agent_name) {
+        return false;
+      }
+
+      // Outcome filter
+      if (args.outcome_tag && args.outcome_tag !== "all" && call.outcome_tag !== args.outcome_tag) {
+        return false;
+      }
+
+      return true;
+    });
+
+    // Get only wins
+    const wins = filteredCalls.filter((c) => c.outcome_tag === OutcomeTag.WonTransferred);
+
+    // Segment by negotiation rounds (1, 2, 3)
+    let oneRoundWins = 0;
+    let twoRoundsWins = 0;
+    let threeRoundsWins = 0;
+
+    for (const win of wins) {
+      if (win.negotiation_rounds === 1) {
+        oneRoundWins++;
+      } else if (win.negotiation_rounds === 2) {
+        twoRoundsWins++;
+      } else if (win.negotiation_rounds === 3) {
+        threeRoundsWins++;
+      }
+    }
+
+    return {
+      one_round_wins: oneRoundWins,
+      two_rounds_wins: twoRoundsWins,
+      three_rounds_wins: threeRoundsWins,
+      total_wins: wins.length,
+    };
+  },
+});
+
+/**
+ * Query to get wins segmented by uplift/margin
+ */
+export const getWinsSegmented = query({
+  args: {
+    start_date: v.string(), // ISO string
+    end_date: v.string(), // ISO string
+    equipment_type: v.optional(v.string()),
+    agent_name: v.optional(v.string()),
+    outcome_tag: v.optional(v.string()),
+  },
+  returns: v.object({
+    low_uplift_wins: v.number(), // ≤10% uplift (better - negotiated down more)
+    high_uplift_wins: v.number(), // >10% uplift (less ideal - paid more)
+    total_wins: v.number(),
+  }),
+  handler: async (ctx, args) => {
+    let allCalls = await ctx.db.query("call_metrics").collect();
+
+    // Apply filters (same logic as getSummary)
+    const filteredCalls = allCalls.filter((call) => {
+      // Date filter
+      const callDate = call.timestamp_utc;
+      if (callDate < args.start_date || callDate > args.end_date) {
+        return false;
+      }
+
+      // Equipment filter
+      if (args.equipment_type && args.equipment_type !== "all" && call.equipment_type !== args.equipment_type) {
+        return false;
+      }
+
+      // Agent filter
+      if (args.agent_name && args.agent_name !== "all" && call.agent_name !== args.agent_name) {
+        return false;
+      }
+
+      // Outcome filter
+      if (args.outcome_tag && args.outcome_tag !== "all" && call.outcome_tag !== args.outcome_tag) {
+        return false;
+      }
+
+      return true;
+    });
+
+    // Get only wins
+    const wins = filteredCalls.filter((c) => c.outcome_tag === OutcomeTag.WonTransferred && c.final_rate !== null);
+
+    // Segment by uplift percentage
+    // Lower uplift is BETTER (they negotiated down more, paid less)
+    let lowUpliftWins = 0; // ≤10% uplift - better deals
+    let highUpliftWins = 0; // >10% uplift - less ideal deals
+
+    for (const win of wins) {
+      const upliftPct = ((win.final_rate! - win.loadboard_rate) / win.loadboard_rate) * 100;
+      if (upliftPct <= 10) {
+        lowUpliftWins++;
+      } else {
+        highUpliftWins++;
+      }
+    }
+
+    return {
+      low_uplift_wins: lowUpliftWins,
+      high_uplift_wins: highUpliftWins,
+      total_wins: wins.length,
+    };
+  },
+});
+
+/**
+ * Query to get agent performance metrics for comparison
+ */
+export const getAgentMetrics = query({
+  args: {
+    start_date: v.string(), // ISO string
+    end_date: v.string(), // ISO string
+    equipment_type: v.optional(v.string()),
+    agent_name: v.optional(v.string()),
+    outcome_tag: v.optional(v.string()),
+  },
+  returns: v.array(
+    v.object({
+      agent_name: v.string(),
+      total_calls: v.number(),
+      win_rate: v.number(),
+      avg_negotiation_rounds: v.number(),
+      avg_sentiment_score: v.number(),
+      avg_uplift_pct: v.number(), // Average uplift for wins only
+    })
+  ),
+  handler: async (ctx, args) => {
+    let allCalls = await ctx.db.query("call_metrics").collect();
+
+    // Apply filters (same logic as getSummary)
+    const filteredCalls = allCalls.filter((call) => {
+      // Date filter
+      const callDate = call.timestamp_utc;
+      if (callDate < args.start_date || callDate > args.end_date) {
+        return false;
+      }
+
+      // Equipment filter
+      if (args.equipment_type && args.equipment_type !== "all" && call.equipment_type !== args.equipment_type) {
+        return false;
+      }
+
+      // Agent filter
+      if (args.agent_name && args.agent_name !== "all" && call.agent_name !== args.agent_name) {
+        return false;
+      }
+
+      // Outcome filter
+      if (args.outcome_tag && args.outcome_tag !== "all" && call.outcome_tag !== args.outcome_tag) {
+        return false;
+      }
+
+      return true;
+    });
+
+    // Group by agent
+    const agentMap = new Map<string, {
+      calls: typeof filteredCalls;
+      wins: typeof filteredCalls;
+    }>();
+
+    for (const call of filteredCalls) {
+      if (!agentMap.has(call.agent_name)) {
+        agentMap.set(call.agent_name, { calls: [], wins: [] });
+      }
+      const agentData = agentMap.get(call.agent_name)!;
+      agentData.calls.push(call);
+      if (call.outcome_tag === OutcomeTag.WonTransferred) {
+        agentData.wins.push(call);
+      }
+    }
+
+    // Convert sentiment tags to numeric scores
+    const sentimentMap: Record<string, number> = {
+      [SentimentTag.VeryPositive]: 2,
+      [SentimentTag.Positive]: 1,
+      [SentimentTag.Neutral]: 0,
+      [SentimentTag.Negative]: -1,
+      [SentimentTag.VeryNegative]: -2,
+    };
+
+    // Calculate metrics per agent
+    const agentMetrics = Array.from(agentMap.entries()).map(([agentName, agentData]) => {
+      const totalCalls = agentData.calls.length;
+      const wins = agentData.wins.length;
+      const winRate = totalCalls > 0 ? wins / totalCalls : 0;
+
+      // Average negotiation rounds
+      const totalRounds = agentData.calls.reduce((sum, c) => sum + c.negotiation_rounds, 0);
+      const avgRounds = totalCalls > 0 ? totalRounds / totalCalls : 0;
+
+      // Average sentiment score
+      const totalSentiment = agentData.calls.reduce((sum, c) => sum + sentimentMap[c.sentiment_tag], 0);
+      const avgSentiment = totalCalls > 0 ? totalSentiment / totalCalls : 0;
+      // Scale from -2..+2 to -1..+1
+      const avgSentimentScore = avgSentiment / 2;
+
+      // Average uplift (only for wins with final_rate)
+      const winsWithRate = agentData.wins.filter((w) => w.final_rate !== null);
+      let avgUplift = 0;
+      if (winsWithRate.length > 0) {
+        const totalUplift = winsWithRate.reduce((sum, w) => {
+          const uplift = ((w.final_rate! - w.loadboard_rate) / w.loadboard_rate) * 100;
+          return sum + uplift;
+        }, 0);
+        avgUplift = totalUplift / winsWithRate.length;
+      }
+
+      return {
+        agent_name: agentName,
+        total_calls: totalCalls,
+        win_rate: winRate,
+        avg_negotiation_rounds: avgRounds,
+        avg_sentiment_score: avgSentimentScore,
+        avg_uplift_pct: avgUplift,
+      };
+    });
+
+    // Sort by agent name
+    return agentMetrics.sort((a, b) => a.agent_name.localeCompare(b.agent_name));
+  },
+});
+
+/**
  * Query to get unique agents
  */
 export const getAgents = query({
@@ -256,8 +578,6 @@ export const seedCallMetrics = internalMutation({
       [OutcomeTag.WonTransferred]: 0,
       [OutcomeTag.NoAgreementPrice]: 0,
       [OutcomeTag.NoFitFound]: 0,
-      [OutcomeTag.Ineligible]: 0,
-      [OutcomeTag.Other]: 0,
     } as Record<OutcomeTag, number>;
     for (const call of verifyCount) {
       outcomeCounts[call.outcome_tag]++;
@@ -277,8 +597,6 @@ export const inspectData = query({
       won_transferred: v.number(),
       no_agreement_price: v.number(),
       no_fit_found: v.number(),
-      ineligible: v.number(),
-      other: v.number(),
     }),
     win_rate: v.number(),
     avg_negotiation_rounds: v.number(),
@@ -313,7 +631,7 @@ export const inspectData = query({
     if (allCalls.length === 0) {
       return {
         total_calls: 0,
-        outcome_counts: { won_transferred: 0, no_agreement_price: 0, no_fit_found: 0, ineligible: 0, other: 0 },
+        outcome_counts: { won_transferred: 0, no_agreement_price: 0, no_fit_found: 0 },
         win_rate: 0,
         avg_negotiation_rounds: 0,
         price_disagreements_pct: 0,
@@ -331,8 +649,6 @@ export const inspectData = query({
       won_transferred: 0,
       no_agreement_price: 0,
       no_fit_found: 0,
-      ineligible: 0,
-      other: 0,
     };
 
     const sentimentCounts = {
@@ -413,9 +729,7 @@ export const createCallMetric = mutation({
     outcome_tag: v.union(
       v.literal(OutcomeTag.WonTransferred),
       v.literal(OutcomeTag.NoAgreementPrice),
-      v.literal(OutcomeTag.NoFitFound),
-      v.literal(OutcomeTag.Ineligible),
-      v.literal(OutcomeTag.Other)
+      v.literal(OutcomeTag.NoFitFound)
     ),
     sentiment_tag: v.union(
       v.literal(SentimentTag.VeryPositive),

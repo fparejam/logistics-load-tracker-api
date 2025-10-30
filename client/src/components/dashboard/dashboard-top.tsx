@@ -15,7 +15,8 @@
 
 import { AcmeTopFilters, TopFiltersState } from "./acme-top-filters";
 import { AcmeKpiRow } from "./acme-kpi-row";
-import { AcmeMoneyRow } from "./acme-money-row";
+import { WinsLossesChart } from "./wins-losses-chart";
+import { AgentComparisonChart } from "./agent-comparison-chart";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useState, useMemo, useEffect } from "react";
@@ -95,9 +96,33 @@ export function DashboardTop() {
     outcome_tag: filters.outcome !== "all" ? filters.outcome : undefined,
   });
 
+  const outcomeBreakdown = useQuery(api.call_metrics.getOutcomeBreakdown, {
+    start_date: startDate,
+    end_date: endDate,
+    equipment_type: filters.equipment !== "all" ? filters.equipment : undefined,
+    agent_name: filters.agent !== "all" ? filters.agent : undefined,
+    outcome_tag: filters.outcome !== "all" ? filters.outcome : undefined,
+  });
+
+  const winsSegmented = useQuery(api.call_metrics.getWinsSegmented, {
+    start_date: startDate,
+    end_date: endDate,
+    equipment_type: filters.equipment !== "all" ? filters.equipment : undefined,
+    agent_name: filters.agent !== "all" ? filters.agent : undefined,
+    outcome_tag: filters.outcome !== "all" ? filters.outcome : undefined,
+  });
+
+  const agentMetrics = useQuery(api.call_metrics.getAgentMetrics, {
+    start_date: startDate,
+    end_date: endDate,
+    equipment_type: filters.equipment !== "all" ? filters.equipment : undefined,
+    agent_name: filters.agent !== "all" ? filters.agent : undefined,
+    outcome_tag: filters.outcome !== "all" ? filters.outcome : undefined,
+  });
+
   const agents = useQuery(api.call_metrics.getAgents);
 
-  const isLoading = data === undefined || agents === undefined;
+  const isLoading = data === undefined || agents === undefined || outcomeBreakdown === undefined || winsSegmented === undefined || agentMetrics === undefined;
 
   return (
     <div className="w-full">
@@ -121,11 +146,19 @@ export function DashboardTop() {
         </div>
       )}
 
-      {/* KPI Cards */}
-      <AcmeKpiRow data={data} isLoading={isLoading} />
+      {/* KPI Section - All 9 Metrics */}
+      <div className="mt-6">
+        <AcmeKpiRow data={data} isLoading={isLoading} />
+      </div>
 
-      {/* Money Cards */}
-      <AcmeMoneyRow data={data} isLoading={isLoading} />
+      {/* Detailed Analysis Section - Charts */}
+      <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+        {/* Wins/Losses Chart - Top Left */}
+        <WinsLossesChart data={outcomeBreakdown} winsSegmented={winsSegmented} isLoading={isLoading} />
+        
+        {/* Agent Comparison Chart - Top Right */}
+        <AgentComparisonChart data={agentMetrics} isLoading={isLoading} />
+      </div>
     </div>
   );
 }

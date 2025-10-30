@@ -15,6 +15,9 @@ interface KPIData {
   pct_no_agreement_price: number;
   pct_no_fit_found: number;
   sentiment_score: number;
+  avg_listed: number;
+  avg_final: number;
+  avg_uplift_pct: number;
 }
 
 interface AcmeKpiRowProps {
@@ -38,17 +41,37 @@ export function AcmeKpiRow({ data, isLoading }: AcmeKpiRowProps) {
     return "neutral";
   };
 
+  // Helper to get uplift color (spec says: green ≤5%, amber 5-10%, red >10%)
+  const getUpliftColor = (upliftPct: number) => {
+    const absUplift = Math.abs(upliftPct * 100);
+    if (absUplift <= 5) return "text-green-600";
+    if (absUplift <= 10) return "text-amber-600";
+    return "text-red-600";
+  };
+
   if (isLoading || !data) {
     return (
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <Card key={i} className="rounded-xl border border-gray-200 shadow-sm">
-            <CardContent className="p-4">
-              <Skeleton className="h-4 w-20 mb-2" />
-              <Skeleton className="h-8 w-16" />
-            </CardContent>
-          </Card>
-        ))}
+      <div className="space-y-6">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Card key={i} className="rounded-xl border border-gray-200 shadow-sm">
+              <CardContent className="p-4">
+                <Skeleton className="h-4 w-20 mb-2" />
+                <Skeleton className="h-8 w-16" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Card key={i} className="rounded-xl border border-gray-200 shadow-sm">
+              <CardContent className="p-4">
+                <Skeleton className="h-4 w-20 mb-2" />
+                <Skeleton className="h-8 w-16" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     );
   }
@@ -61,7 +84,8 @@ export function AcmeKpiRow({ data, isLoading }: AcmeKpiRowProps) {
       ? "text-red-600"
       : "text-gray-600";
 
-  const kpis = [
+  // Split KPIs into two rows: main metrics (6) and financial metrics (3)
+  const mainKpis = [
     {
       label: "Total Calls",
       value: data.total_calls.toLocaleString(),
@@ -115,57 +139,93 @@ export function AcmeKpiRow({ data, isLoading }: AcmeKpiRowProps) {
     },
   ];
 
-  return (
-    <div
-      className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6"
-      role="region"
-      aria-label="Key Performance Indicators"
-    >
-      {kpis.map((kpi, index) => (
-        <Card
-          key={index}
-          className="rounded-xl border border-gray-200 shadow-sm bg-white"
-        >
-          <CardContent className="p-4">
-            <div className="flex flex-col">
-              <div className="flex items-center gap-1.5">
-                <span className="text-sm text-gray-500">{kpi.label}</span>
-                {kpi.tooltip && (
-                  <Tooltip delayDuration={0}>
-                    <TooltipTrigger asChild>
-                      <Info className="size-3.5 text-gray-400" />
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-xs">
-                      <p className="text-sm">{kpi.tooltip}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                )}
-              </div>
-              <span className="mt-2 text-2xl font-semibold tracking-tight text-gray-900">
-                {kpi.value}
-              </span>
-              {kpi.delta && (
-                <div className="mt-2 flex items-center gap-1 text-xs">
-                  {kpi.delta > 0 ? (
-                    <>
-                      <TrendingUp className="size-3 text-green-600" />
-                      <span className="text-green-600">
-                        +{kpi.delta.toFixed(1)}%
-                      </span>
-                    </>
-                  ) : kpi.delta < 0 ? (
-                    <>
-                      <TrendingDown className="size-3 text-red-600" />
-                      <span className="text-red-600">{kpi.delta.toFixed(1)}%</span>
-                    </>
-                  ) : null}
-                </div>
+  const financialKpis = [
+    {
+      label: "Avg Listed",
+      value: `$${Math.round(data.avg_listed).toLocaleString()}`,
+      delta: null,
+      badge: null,
+      tooltip: null,
+      color: "text-gray-900",
+    },
+    {
+      label: "Avg Final",
+      value: `$${Math.round(data.avg_final).toLocaleString()}`,
+      delta: null,
+      badge: null,
+      tooltip: null,
+      color: "text-gray-900",
+    },
+    {
+      label: "Avg Uplift %",
+      value: `${data.avg_uplift_pct >= 0 ? "+" : ""}${(data.avg_uplift_pct * 100).toFixed(1)}%`,
+      delta: null,
+      badge: null,
+      tooltip: "Difference between final negotiated and listed rates. The lower the better.",
+      color: getUpliftColor(data.avg_uplift_pct),
+    },
+  ];
+
+  const renderKpiCard = (kpi: typeof mainKpis[0], index: number) => {
+    const delta = kpi.delta as number | null;
+    return (
+      <Card
+        key={index}
+        className="rounded-xl border border-gray-200 shadow-sm bg-white"
+      >
+        <CardContent className="p-4">
+          <div className="flex flex-col">
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm text-gray-500">{kpi.label}</span>
+              {kpi.tooltip && (
+                <Tooltip delayDuration={0}>
+                  <TooltipTrigger asChild>
+                    <Info className="size-3.5 text-gray-400" />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p className="text-sm">{kpi.tooltip}</p>
+                  </TooltipContent>
+                </Tooltip>
               )}
-              {kpi.badge}
             </div>
-          </CardContent>
-        </Card>
-      ))}
+            <span className={`mt-2 text-2xl font-semibold tracking-tight ${(kpi as any).color || "text-gray-900"}`}>
+              {kpi.value}
+            </span>
+            {delta !== null && delta !== undefined && (
+              <div className="mt-2 flex items-center gap-1 text-xs">
+                {delta > 0 ? (
+                  <>
+                    <TrendingUp className="size-3 text-green-600" />
+                    <span className="text-green-600">
+                      +{delta.toFixed(1)}%
+                    </span>
+                  </>
+                ) : delta < 0 ? (
+                  <>
+                    <TrendingDown className="size-3 text-red-600" />
+                    <span className="text-red-600">{delta.toFixed(1)}%</span>
+                  </>
+                ) : null}
+              </div>
+            )}
+            {kpi.badge}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  return (
+    <div className="space-y-6" role="region" aria-label="Key Performance Indicators">
+      {/* Main KPI Row - 6 cards */}
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        {mainKpis.map((kpi, index) => renderKpiCard(kpi, index))}
+      </div>
+      
+      {/* Financial Metrics Row - 3 cards */}
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {financialKpis.map((kpi, index) => renderKpiCard(kpi, index + 6))}
+      </div>
     </div>
   );
 }

@@ -31,7 +31,7 @@ export function AcmeTopFilters({
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-4">
         {/* Date Range */}
         <div className="flex-1 min-w-[140px]">
           <label htmlFor="dateRange" className="sr-only">
@@ -119,7 +119,7 @@ export function AcmeTopFilters({
               <SelectItem value="all">All Outcomes</SelectItem>
               <SelectItem value="won_transferred">Won</SelectItem>
               <SelectItem value="no_agreement_price">Lost (Price)</SelectItem>
-              <SelectItem value="no_fit_found">No Fit</SelectItem>
+              <SelectItem value="no_fit_found">Lost (No Fit)</SelectItem>
             </SelectContent>
           </Select>
         </div>

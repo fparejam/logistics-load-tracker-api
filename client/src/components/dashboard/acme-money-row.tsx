@@ -29,7 +29,7 @@ export function AcmeMoneyRow({ data, isLoading }: AcmeMoneyRowProps) {
 
   if (isLoading || !data) {
     return (
-      <div className="mt-4 grid gap-4 sm:grid-cols-3">
+      <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 3 }).map((_, i) => (
           <Card key={i} className="rounded-xl border border-gray-200 shadow-sm">
             <CardContent className="p-4">
@@ -65,7 +65,7 @@ export function AcmeMoneyRow({ data, isLoading }: AcmeMoneyRowProps) {
 
   return (
     <div
-      className="mt-4 grid gap-4 sm:grid-cols-3"
+      className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
       role="region"
       aria-label="Financial Metrics"
     >

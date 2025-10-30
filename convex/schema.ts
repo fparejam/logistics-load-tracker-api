@@ -35,9 +35,7 @@ export default defineSchema({
     outcome_tag: v.union(
       v.literal(OutcomeTag.WonTransferred),
       v.literal(OutcomeTag.NoAgreementPrice),
-      v.literal(OutcomeTag.NoFitFound),
-      v.literal(OutcomeTag.Ineligible),
-      v.literal(OutcomeTag.Other)
+      v.literal(OutcomeTag.NoFitFound)
     ),
     sentiment_tag: v.union(
       v.literal(SentimentTag.VeryPositive),

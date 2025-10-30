@@ -206,8 +206,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         "won_transferred",
         "no_agreement_price",
         "no_fit_found",
-        "ineligible",
-        "other",
       ];
       if (!validOutcomes.includes(body.outcome_tag)) {
         return res.status(400).json({

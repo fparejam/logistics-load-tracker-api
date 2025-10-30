@@ -1,21 +1,10 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
-import { getInternalSchema } from "./lib/internal_schema";
 import { OutcomeTag, SentimentTag } from "./types";
 
 export default defineSchema({
-  /*
-   * CAPITAL: DO NOT MODIFY THIS SECTION
-   * INTERNAL AUTH SCHEMA
-   */
-  ...getInternalSchema(),
-
-  /* APPLICATION TABLES
-   *
-   * These are the tables that are used by the application, feel free to delete
-   * them as you see fit.
-   */
-  /* ADD ANY NEW TABLES HERE */
+  /* APPLICATION TABLES */
+  
   loads: defineTable({
     load_id: v.string(), // Unique identifier for the load
     origin: v.string(), // Starting location

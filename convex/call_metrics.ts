@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { query, internalMutation } from "./_generated/server";
 import { Doc } from "./_generated/dataModel";
+import { OutcomeTag, SentimentTag } from "./types";
 
 /**
  * Query to get call metrics summary with filters
@@ -71,24 +72,24 @@ export const getSummary = query({
     }
 
     // Calculate KPIs
-    const wonCalls = filteredCalls.filter((c) => c.outcome_tag === "won_transferred").length;
+    const wonCalls = filteredCalls.filter((c) => c.outcome_tag === OutcomeTag.WonTransferred).length;
     const winRate = wonCalls / totalCalls;
 
     const avgRounds = filteredCalls.reduce((sum, c) => sum + c.negotiation_rounds, 0) / totalCalls;
 
-    const priceDisagreements = filteredCalls.filter((c) => c.outcome_tag === "no_agreement_price").length;
+    const priceDisagreements = filteredCalls.filter((c) => c.outcome_tag === OutcomeTag.NoAgreementPrice).length;
     const pctPriceDisagreements = priceDisagreements / totalCalls;
 
-    const noFitCalls = filteredCalls.filter((c) => c.outcome_tag === "no_fit_found").length;
+    const noFitCalls = filteredCalls.filter((c) => c.outcome_tag === OutcomeTag.NoFitFound).length;
     const pctNoFit = noFitCalls / totalCalls;
 
     // Convert sentiment tags to numeric scores
     const sentimentMap: Record<string, number> = {
-      very_positive: 2,
-      positive: 1,
-      neutral: 0,
-      negative: -1,
-      very_negative: -2,
+      [SentimentTag.VeryPositive]: 2,
+      [SentimentTag.Positive]: 1,
+      [SentimentTag.Neutral]: 0,
+      [SentimentTag.Negative]: -1,
+      [SentimentTag.VeryNegative]: -2,
     };
 
     const totalSentiment = filteredCalls.reduce((sum, c) => sum + sentimentMap[c.sentiment_tag], 0);
@@ -165,9 +166,9 @@ export const seedCallMetrics = internalMutation({
     // - 30% non-wins: 35% price disagreements (10.5% total) + 65% no fit (19.5% total)
     const pickOutcome = (): Doc<"call_metrics">["outcome_tag"] => {
       const rand = Math.random();
-      if (rand < 0.70) return "won_transferred";      // 70% wins
-      if (rand < 0.805) return "no_agreement_price";  // 10.5% price disagreements (0.70 + 0.105 = 0.805)
-      return "no_fit_found";                           // 19.5% no fit (remaining)
+      if (rand < 0.70) return OutcomeTag.WonTransferred;      // 70% wins
+      if (rand < 0.805) return OutcomeTag.NoAgreementPrice;  // 10.5% price disagreements (0.70 + 0.105 = 0.805)
+      return OutcomeTag.NoFitFound;                           // 19.5% no fit (remaining)
     };
 
     // Negotiation rounds: avg ~2.1
@@ -183,19 +184,19 @@ export const seedCallMetrics = internalMutation({
 
     // Sentiment: always positive/very_positive
     const getSentiment = (outcome: Doc<"call_metrics">["outcome_tag"]): Doc<"call_metrics">["sentiment_tag"] => {
-      if (outcome === "won_transferred") {
-        return Math.random() < 0.85 ? "very_positive" : "positive";
-      } else if (outcome === "no_agreement_price") {
+      if (outcome === OutcomeTag.WonTransferred) {
+        return Math.random() < 0.85 ? SentimentTag.VeryPositive : SentimentTag.Positive;
+      } else if (outcome === OutcomeTag.NoAgreementPrice) {
         const rand = Math.random();
-        if (rand < 0.5) return "positive";
-        if (rand < 0.85) return "neutral";
-        return "very_positive";
+        if (rand < 0.5) return SentimentTag.Positive;
+        if (rand < 0.85) return SentimentTag.Neutral;
+        return SentimentTag.VeryPositive;
       } else {
         // no_fit_found
         const rand = Math.random();
-        if (rand < 0.6) return "positive";
-        if (rand < 0.9) return "very_positive";
-        return "neutral";
+        if (rand < 0.6) return SentimentTag.Positive;
+        if (rand < 0.9) return SentimentTag.VeryPositive;
+        return SentimentTag.Neutral;
       }
     };
 
@@ -228,7 +229,7 @@ export const seedCallMetrics = internalMutation({
         const sentiment = getSentiment(outcome);
         const negotiationRounds = getNegotiationRounds();
         const loadboardRate = Math.floor(Math.random() * 2000) + 500; // $500-$2,499
-        const finalRate = outcome === "won_transferred" ? calculateFinalRate(loadboardRate) : null;
+        const finalRate = outcome === OutcomeTag.WonTransferred ? calculateFinalRate(loadboardRate) : null;
         const callDate = new Date(now - day * 24 * 60 * 60 * 1000 - Math.random() * 24 * 60 * 60 * 1000);
 
         sampleCalls.push({
@@ -252,12 +253,12 @@ export const seedCallMetrics = internalMutation({
     // Verify the data was inserted
     const verifyCount = await ctx.db.query("call_metrics").collect();
     const outcomeCounts = {
-      won_transferred: 0,
-      no_agreement_price: 0,
-      no_fit_found: 0,
-      ineligible: 0,
-      other: 0,
-    };
+      [OutcomeTag.WonTransferred]: 0,
+      [OutcomeTag.NoAgreementPrice]: 0,
+      [OutcomeTag.NoFitFound]: 0,
+      [OutcomeTag.Ineligible]: 0,
+      [OutcomeTag.Other]: 0,
+    } as Record<OutcomeTag, number>;
     for (const call of verifyCount) {
       outcomeCounts[call.outcome_tag]++;
     }
@@ -335,12 +336,12 @@ export const inspectData = query({
     };
 
     const sentimentCounts = {
-      very_positive: 0,
-      positive: 0,
-      neutral: 0,
-      negative: 0,
-      very_negative: 0,
-    };
+      [SentimentTag.VeryPositive]: 0,
+      [SentimentTag.Positive]: 0,
+      [SentimentTag.Neutral]: 0,
+      [SentimentTag.Negative]: 0,
+      [SentimentTag.VeryNegative]: 0,
+    } as Record<SentimentTag, number>;
 
     let totalRounds = 0;
     let totalListed = 0;
@@ -354,7 +355,7 @@ export const inspectData = query({
       totalRounds += call.negotiation_rounds;
       timestamps.push(call.timestamp_utc);
       
-      if (call.outcome_tag === "won_transferred" && call.final_rate !== null) {
+      if (call.outcome_tag === OutcomeTag.WonTransferred && call.final_rate !== null) {
         totalListed += call.loadboard_rate;
         totalFinal += call.final_rate;
         winsCount++;
@@ -363,8 +364,8 @@ export const inspectData = query({
 
     const winRate = outcomeCounts.won_transferred / allCalls.length;
     const avgRounds = totalRounds / allCalls.length;
-    const priceDisagreementsPct = outcomeCounts.no_agreement_price / allCalls.length;
-    const noFitPct = outcomeCounts.no_fit_found / allCalls.length;
+    const priceDisagreementsPct = outcomeCounts[OutcomeTag.NoAgreementPrice] / allCalls.length;
+    const noFitPct = outcomeCounts[OutcomeTag.NoFitFound] / allCalls.length;
 
     const avgListed = winsCount > 0 ? totalListed / winsCount : 0;
     const avgFinal = winsCount > 0 ? totalFinal / winsCount : 0;

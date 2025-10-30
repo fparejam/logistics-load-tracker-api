@@ -1,6 +1,7 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { getInternalSchema } from "./lib/internal_schema";
+import { OutcomeTag, SentimentTag } from "./types";
 
 export default defineSchema({
   /*
@@ -43,18 +44,18 @@ export default defineSchema({
     agent_name: v.string(),
     equipment_type: v.string(),
     outcome_tag: v.union(
-      v.literal("won_transferred"),
-      v.literal("no_agreement_price"),
-      v.literal("no_fit_found"),
-      v.literal("ineligible"),
-      v.literal("other")
+      v.literal(OutcomeTag.WonTransferred),
+      v.literal(OutcomeTag.NoAgreementPrice),
+      v.literal(OutcomeTag.NoFitFound),
+      v.literal(OutcomeTag.Ineligible),
+      v.literal(OutcomeTag.Other)
     ),
     sentiment_tag: v.union(
-      v.literal("very_positive"),
-      v.literal("positive"),
-      v.literal("neutral"),
-      v.literal("negative"),
-      v.literal("very_negative")
+      v.literal(SentimentTag.VeryPositive),
+      v.literal(SentimentTag.Positive),
+      v.literal(SentimentTag.Neutral),
+      v.literal(SentimentTag.Negative),
+      v.literal(SentimentTag.VeryNegative)
     ),
     negotiation_rounds: v.number(),
     loadboard_rate: v.number(),

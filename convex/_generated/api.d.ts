@@ -22,6 +22,7 @@ import type * as loads from "../loads.js";
 import type * as rebolt from "../rebolt.js";
 import type * as router from "../router.js";
 import type * as seed from "../seed.js";
+import type * as types from "../types.js";
 import type * as users from "../users.js";
 
 /**
@@ -42,6 +43,7 @@ declare const fullApi: ApiFromModules<{
   rebolt: typeof rebolt;
   router: typeof router;
   seed: typeof seed;
+  types: typeof types;
   users: typeof users;
 }>;
 export declare const api: FilterApi<

@@ -56,10 +56,28 @@ To enable automatic deployments, you need to configure the following secrets in 
   - Copy the entire key exactly as shown (no spaces, no extra characters)
   - The key should automatically be detected by `convex deploy` when set as `CONVEX_DEPLOY_KEY`
 
+#### `VITE_MAPBOX_API_TOKEN`
+- **What it is**: Your Mapbox API token for map visualizations
+- **How to get it**: 
+  - Go to https://account.mapbox.com
+  - Navigate to **Account** → **Access tokens**
+  - Copy your default public token
+
+#### `VITE_AG_CHARTS_LICENSE`
+- **What it is**: AG Charts license key for chart rendering
+- **How to get it**: 
+  - Get from your AG Charts account if you have a license
+  - Or use a trial/evaluation license key
+
 ### 3. Verify Secrets
 After adding all secrets, verify they're set:
 - Go to `Settings` → `Secrets and variables` → `Actions`
-- You should see: `FLY_API_TOKEN`, `VITE_CONVEX_URL`, and `CONVEX_DEPLOY_KEY`
+- You should see all 5 secrets:
+  - `CONVEX_DEPLOY_KEY`
+  - `FLY_API_TOKEN`
+  - `VITE_CONVEX_URL`
+  - `VITE_MAPBOX_API_TOKEN`
+  - `VITE_AG_CHARTS_LICENSE`
 
 ## How It Works
 
@@ -74,7 +92,7 @@ When you push code to the `main` branch:
    - Checks out the code
    - Sets up Fly.io CLI
    - Builds and deploys the Docker image to Fly.io
-   - Uses `VITE_CONVEX_URL` as a build argument so Vite embeds it
+   - Uses build secrets (`VITE_CONVEX_URL`, `VITE_MAPBOX_API_TOKEN`, `VITE_AG_CHARTS_LICENSE`) so Vite embeds them at build time
    - Verifies the deployment status
 
 ## Manual Deployment
@@ -98,10 +116,14 @@ flyctl deploy --build-arg VITE_CONVEX_URL=your-convex-url
 
 ### Workflow fails on "Deploy to Fly.io"
 - Check that `FLY_API_TOKEN` is valid
-- Verify `VITE_CONVEX_URL` is set and is the production URL (not dev)
+- Verify all build secrets are set: `VITE_CONVEX_URL`, `VITE_MAPBOX_API_TOKEN`, `VITE_AG_CHARTS_LICENSE`
+- Ensure secrets are production values (not dev)
 - Check Fly.io logs: `flyctl logs`
 
-### Build fails with missing VITE_CONVEX_URL
-- Ensure `VITE_CONVEX_URL` secret is set in GitHub
-- The workflow passes it as a build argument automatically
+### Build fails with missing build secrets
+- Ensure all three build secrets are set in GitHub:
+  - `VITE_CONVEX_URL`
+  - `VITE_MAPBOX_API_TOKEN`
+  - `VITE_AG_CHARTS_LICENSE`
+- The workflow passes these as build arguments automatically during deployment
 

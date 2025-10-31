@@ -8,7 +8,7 @@ export function Layout({ children }: { children: ReactNode }) {
     <div className="flex min-h-screen w-full flex-col bg-background">
       {/* Navigation Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/50 backdrop-blur-sm">
-        <nav className="flex items-center justify-between p-1.5 md:max-w-[1600px] mx-auto">
+        <nav className="flex items-center justify-between py-3 max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-8">
           {/* Logo and Brand */}
           <button
             onClick={() => navigate("/")}
@@ -22,7 +22,7 @@ export function Layout({ children }: { children: ReactNode }) {
         </nav>
       </header>
       {/* Main Content */}
-      <main className="flex-1 overflow-hidden">{children}</main>
+      <main className="flex-1">{children}</main>
     </div>
   );
 }

@@ -113,13 +113,18 @@ export function DashboardTop() {
 
   return (
     <div className="w-full">
-      {/* Filters */}
-      <AcmeTopFilters
-        filters={filters}
-        setFilters={setFilters}
-        agents={agents || []}
-        isLoading={isLoading}
-      />
+      {/* Spacer for header height */}
+      <div className="h-12" />
+      
+      {/* Sticky Filters Container - positioned below header */}
+      <div className="sticky top-12 z-40 bg-white -mt-12">
+        <AcmeTopFilters
+          filters={filters}
+          setFilters={setFilters}
+          agents={agents || []}
+          isLoading={isLoading}
+        />
+      </div>
 
       {/* Loading announcement for screen readers */}
       {isLoading && (

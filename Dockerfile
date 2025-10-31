@@ -3,17 +3,6 @@ FROM oven/bun:1 AS base
 
 WORKDIR /app
 
-# Fly.io secrets are available as environment variables during build
-# Vite will automatically pick up VITE_* prefixed env vars
-ARG VITE_CONVEX_URL
-ARG VITE_MAPBOX_API_TOKEN
-ARG VITE_AG_CHARTS_LICENSE
-
-# Make them available to the build process
-ENV VITE_CONVEX_URL=${VITE_CONVEX_URL}
-ENV VITE_MAPBOX_API_TOKEN=${VITE_MAPBOX_API_TOKEN}
-ENV VITE_AG_CHARTS_LICENSE=${VITE_AG_CHARTS_LICENSE}
-
 # Copy package files
 COPY package.json bun.lock* ./
 
@@ -24,6 +13,16 @@ RUN bun install --frozen-lockfile
 COPY . .
 
 # Build the application using Bun
+# We use ARG to accept them, with fallback to env vars
+ARG VITE_CONVEX_URL
+ARG VITE_MAPBOX_API_TOKEN
+ARG VITE_AG_CHARTS_LICENSE
+
+# Export as ENV so Vite can access them (Vite reads VITE_* env vars)
+ENV VITE_CONVEX_URL=${VITE_CONVEX_URL}
+ENV VITE_MAPBOX_API_TOKEN=${VITE_MAPBOX_API_TOKEN}
+ENV VITE_AG_CHARTS_LICENSE=${VITE_AG_CHARTS_LICENSE}
+
 RUN bun run build
 
 # Production stage - use Bun's slim image

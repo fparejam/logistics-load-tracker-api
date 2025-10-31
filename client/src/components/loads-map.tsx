@@ -28,6 +28,11 @@ const LAYER_GROUPS = {
 type LayerGroupId = keyof typeof LAYER_GROUPS;
 
 export function LoadsMap({ className = "", height = "75vh", filters = {} }: LoadsMapProps) {
+  // Always log - even in production (helps debug)
+  if (typeof window !== 'undefined') {
+    window.__MAP_DEBUG__ = { initialized: true, timestamp: new Date().toISOString() };
+  }
+  
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   
@@ -146,23 +151,47 @@ export function LoadsMap({ className = "", height = "75vh", filters = {} }: Load
     // Get token - try multiple ways since Fly.io might obfuscate in console
     const tokenValue = import.meta.env.VITE_MAPBOX_API_TOKEN || (import.meta as any).env?.VITE_MAPBOX_API_TOKEN;
     
+    // Debug info (available even if console is stripped)
+    const debugInfo = {
+      hasToken: !!tokenValue,
+      tokenLength: tokenValue ? tokenValue.length : 0,
+      tokenPreview: tokenValue ? tokenValue.substring(0, 10) + '...' : 'none',
+    };
+    
+    if (typeof window !== 'undefined') {
+      (window as any).__MAP_TOKEN_DEBUG__ = debugInfo;
+    }
+    
     // Check if token exists (even if it appears empty in console due to obfuscation)
-    // Try to set it anyway and let Mapbox validate it
-    if (!tokenValue) {
-      console.error("[LoadsMap] ❌ VITE_MAPBOX_API_TOKEN not found");
+    if (!tokenValue || tokenValue.trim() === '') {
+      // Set debug error
+      if (typeof window !== 'undefined') {
+        (window as any).__MAP_ERROR__ = 'Token missing or empty';
+      }
       return;
     }
     
     // Set token even if console shows it as empty (Fly.io may obfuscate)
-    mapboxgl.accessToken = tokenValue;
-    
-    // Verify token is set by checking mapboxgl.accessToken
-    if (!mapboxgl.accessToken || mapboxgl.accessToken === '') {
-      console.error("[LoadsMap] ❌ Failed to set Mapbox token");
+    try {
+      mapboxgl.accessToken = tokenValue;
+      
+      // Verify token is set
+      if (!mapboxgl.accessToken || mapboxgl.accessToken === '') {
+        if (typeof window !== 'undefined') {
+          (window as any).__MAP_ERROR__ = 'Failed to set Mapbox token';
+        }
+        return;
+      }
+      
+      if (typeof window !== 'undefined') {
+        (window as any).__MAP_DEBUG__.tokenSet = true;
+      }
+    } catch (err) {
+      if (typeof window !== 'undefined') {
+        (window as any).__MAP_ERROR__ = `Error setting token: ${err}`;
+      }
       return;
     }
-    
-    console.log("[LoadsMap] ✅ Mapbox token set, initializing map...");
     
     // Ensure container is empty
     if (containerRef.current) {

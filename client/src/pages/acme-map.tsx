@@ -6,6 +6,11 @@ import { api } from "@/convex/_generated/api";
 import { useState, useMemo } from "react";
 
 export default function AcmeMap() {
+  // Debug
+  if (typeof window !== 'undefined') {
+    (window as any).__MAP_PAGE_DEBUG__ = { loaded: true, timestamp: new Date().toISOString() };
+  }
+  
   // Initialize filters with defaults (no outcome filter needed for map - only shows successful loads)
   const [filters, setFilters] = useState<TopFiltersState>({
     dateRange: "allTime",

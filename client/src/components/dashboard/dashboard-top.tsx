@@ -133,7 +133,7 @@ export function DashboardTop() {
       <div className="h-12" />
       
       {/* Sticky Filters Container - positioned below header */}
-      <div className="sticky top-12 z-40 bg-white -mt-12">
+      <div className="sticky top-15 z-40 bg-white -mt-12">
         <AcmeTopFilters
           filters={filters}
           setFilters={setFilters}
@@ -155,12 +155,12 @@ export function DashboardTop() {
       )}
 
       {/* KPI Section - All 9 Metrics */}
-      <div className="mt-6">
+      <div className="mt-4">
         <AcmeKpiRow data={data} isLoading={isLoading} />
       </div>
 
       {/* Detailed Analysis Section - Charts (stacked) */}
-      <div className="mt-6 grid grid-cols-1 gap-6 items-stretch">
+      <div className="mt-4 grid grid-cols-1 gap-4 items-stretch">
         {/* Wins/Losses Sankey (AG Charts) - Top Left */}
         <WinsLossesAgSankey
           outcome={outcomeBreakdown}

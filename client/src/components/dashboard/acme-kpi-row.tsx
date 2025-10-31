@@ -216,7 +216,7 @@ export function AcmeKpiRow({ data, isLoading }: AcmeKpiRowProps) {
   };
 
   return (
-    <div className="space-y-6" role="region" aria-label="Key Performance Indicators">
+    <div className="space-y-4" role="region" aria-label="Key Performance Indicators">
       {/* Main KPI Row - 6 cards (3-up on mobile) */}
       <div className="grid grid-cols-3 gap-4 xl:grid-cols-6">
         {mainKpis.map((kpi, index) => renderKpiCard(kpi, index))}

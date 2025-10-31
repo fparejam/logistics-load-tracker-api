@@ -215,7 +215,7 @@ export function AgentComparisonChart({ data, isLoading }: AgentComparisonChartPr
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col min-h-0">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 flex-1">
           {charts.map((chart, index) => (
             <div key={index} className="space-y-2">
               <div className="flex items-center justify-between">

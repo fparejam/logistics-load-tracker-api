@@ -5,7 +5,7 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 // Vite only exposes variables prefixed with VITE_
-const accessToken = (import.meta.env?.VITE_MAPBOX_API_TOKEN || (import.meta as any).env?.VITE_MAPBOX_API_TOKEN) as string | undefined;
+const accessToken = (import.meta as any)?.env?.VITE_MAPBOX_API_TOKEN as string | undefined;
 
 interface LoadsMapProps {
   className?: string;
@@ -143,21 +143,26 @@ export function LoadsMap({ className = "", height = "75vh", filters = {} }: Load
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
     
-    // Check token availability and value
-    const envVars = Object.keys(import.meta.env).filter(k => k.startsWith('VITE_'));
+    // Get token - try multiple ways since Fly.io might obfuscate in console
     const tokenValue = import.meta.env.VITE_MAPBOX_API_TOKEN || (import.meta as any).env?.VITE_MAPBOX_API_TOKEN;
     
-    if (!tokenValue || tokenValue === 'undefined' || tokenValue.trim() === '') {
-      console.error("[LoadsMap] ❌ VITE_MAPBOX_API_TOKEN is missing, undefined, or empty");
-      console.log("[LoadsMap] Available env vars:", envVars);
-      console.log("[LoadsMap] Token value:", tokenValue);
-      console.log("[LoadsMap] Full import.meta.env:", import.meta.env);
+    // Check if token exists (even if it appears empty in console due to obfuscation)
+    // Try to set it anyway and let Mapbox validate it
+    if (!tokenValue) {
+      console.error("[LoadsMap] ❌ VITE_MAPBOX_API_TOKEN not found");
       return;
     }
     
-    console.log("[LoadsMap] ✅ Mapbox token present, initializing map...");
-    console.log("[LoadsMap] Token starts with:", tokenValue.substring(0, 10) + "...");
+    // Set token even if console shows it as empty (Fly.io may obfuscate)
     mapboxgl.accessToken = tokenValue;
+    
+    // Verify token is set by checking mapboxgl.accessToken
+    if (!mapboxgl.accessToken || mapboxgl.accessToken === '') {
+      console.error("[LoadsMap] ❌ Failed to set Mapbox token");
+      return;
+    }
+    
+    console.log("[LoadsMap] ✅ Mapbox token set, initializing map...");
     
     // Ensure container is empty
     if (containerRef.current) {
@@ -349,8 +354,9 @@ export function LoadsMap({ className = "", height = "75vh", filters = {} }: Load
       }
     });
     
-    map.on("error", () => {
-      // Silently fail map errors
+    map.on("error", (e) => {
+      // Log map errors for debugging
+      console.error("[LoadsMap] Mapbox error:", e.error);
     });
     
     mapRef.current = map;

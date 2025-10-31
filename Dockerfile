@@ -3,10 +3,12 @@ FROM oven/bun:1 AS base
 
 WORKDIR /app
 
-# Accept VITE_CONVEX_URL as build argument
+# Accept VITE_* env vars as build arguments
 # This is needed because Vite embeds VITE_* env vars at build time
 ARG VITE_CONVEX_URL
+ARG VITE_MAPBOX_API_TOKEN
 ENV VITE_CONVEX_URL=${VITE_CONVEX_URL}
+ENV VITE_MAPBOX_API_TOKEN=${VITE_MAPBOX_API_TOKEN}
 
 # Copy package files
 COPY package.json bun.lock* ./

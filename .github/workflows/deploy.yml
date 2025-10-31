@@ -62,16 +62,28 @@ jobs:
             echo "❌ VITE_CONVEX_URL secret is not set"
             exit 1
           fi
+          if [ -z "$VITE_MAPBOX_API_TOKEN" ]; then
+            echo "❌ VITE_MAPBOX_API_TOKEN secret is not set"
+            exit 1
+          fi
+          if [ -z "$VITE_AG_CHARTS_LICENSE" ]; then
+            echo "❌ VITE_AG_CHARTS_LICENSE secret is not set"
+            exit 1
+          fi
           echo "✅ All required secrets are set"
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
           VITE_CONVEX_URL: ${{ secrets.VITE_CONVEX_URL }}
+          VITE_MAPBOX_API_TOKEN: ${{ secrets.VITE_MAPBOX_API_TOKEN }}
+          VITE_AG_CHARTS_LICENSE: ${{ secrets.VITE_AG_CHARTS_LICENSE }}
 
       - name: Deploy to Fly.io
         run: |
-          echo "🚀 Deploying to Fly.io..."
+          echo "🚀 Deploying to Fly.io with build secrets..."
           flyctl deploy --remote-only \
-            --build-arg VITE_CONVEX_URL="${{ secrets.VITE_CONVEX_URL }}"
+            --build-secret "VITE_CONVEX_URL=${{ secrets.VITE_CONVEX_URL }}" \
+            --build-secret "VITE_MAPBOX_API_TOKEN=${{ secrets.VITE_MAPBOX_API_TOKEN }}" \
+            --build-secret "VITE_AG_CHARTS_LICENSE=${{ secrets.VITE_AG_CHARTS_LICENSE }}"
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 

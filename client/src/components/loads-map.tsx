@@ -27,6 +27,78 @@ const LAYER_GROUPS = {
 
 type LayerGroupId = keyof typeof LAYER_GROUPS;
 
+// Helper function to add loads layers to the map
+const addLoadsLayers = (map: mapboxgl.Map) => {
+  // Clusters layer
+  if (!map.getLayer("loads-clusters")) {
+    map.addLayer({
+      id: "loads-clusters",
+      type: "circle",
+      source: "loads",
+      filter: ["has", "point_count"],
+      layout: { visibility: "none" },
+      paint: {
+        "circle-color": [
+          "step",
+          ["get", "point_count"],
+          "#51bbd6",
+          10, "#f1f075",
+          30, "#f28cb1",
+        ],
+        "circle-radius": [
+          "step",
+          ["get", "point_count"],
+          20,
+          10, 30,
+          30, 40,
+        ],
+        "circle-emissive-strength": 1,
+      },
+    });
+  }
+
+  // Cluster count labels
+  if (!map.getLayer("loads-cluster-count")) {
+    map.addLayer({
+      id: "loads-cluster-count",
+      type: "symbol",
+      source: "loads",
+      filter: ["has", "point_count"],
+      layout: {
+        "text-field": ["get", "point_count_abbreviated"],
+        "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Bold"],
+        "text-size": 12,
+        visibility: "none",
+      },
+    });
+  }
+
+  // Unclustered points
+  if (!map.getLayer("loads-unclustered")) {
+    map.addLayer({
+      id: "loads-unclustered",
+      type: "circle",
+      source: "loads",
+      filter: ["!", ["has", "point_count"]],
+      layout: { visibility: "none" },
+      paint: {
+        "circle-color": [
+          "match",
+          ["get", "equipment"],
+          "dry_van", "#10b981",
+          "reefer", "#f59e0b",
+          "flatbed", "#8b5cf6",
+          "#11b4da",
+        ],
+        "circle-radius": 6,
+        "circle-stroke-width": 1,
+        "circle-stroke-color": "#fff",
+        "circle-emissive-strength": 1,
+      },
+    });
+  }
+};
+
 export function LoadsMap({ className = "", height = "75vh", filters = {} }: LoadsMapProps) {
   // Always log - even in production (helps debug)
   if (typeof window !== 'undefined') {
@@ -71,7 +143,6 @@ export function LoadsMap({ className = "", height = "75vh", filters = {} }: Load
       };
     }>;
   }>({ type: "FeatureCollection", features: [] });
-
 
   // Fetch driving routes from Mapbox Directions API
   useEffect(() => {
@@ -225,72 +296,8 @@ export function LoadsMap({ className = "", height = "75vh", filters = {} }: Load
           clusterRadius: 50,
         });
         
-        // Clusters layer
-        map.addLayer({
-          id: "loads-clusters",
-          type: "circle",
-          source: "loads",
-          filter: ["has", "point_count"],
-          layout: {
-            visibility: "none", // Hidden by default
-          },
-          paint: {
-            "circle-color": [
-              "step",
-              ["get", "point_count"],
-              "#51bbd6",
-              10, "#f1f075",
-              30, "#f28cb1",
-            ],
-            "circle-radius": [
-              "step",
-              ["get", "point_count"],
-              20,
-              10, 30,
-              30, 40,
-            ],
-            "circle-emissive-strength": 1,
-          },
-        });
-        
-        // Cluster count labels
-        map.addLayer({
-          id: "loads-cluster-count",
-          type: "symbol",
-          source: "loads",
-          filter: ["has", "point_count"],
-          layout: {
-            "text-field": ["get", "point_count_abbreviated"],
-            "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Bold"],
-            "text-size": 12,
-            visibility: "none", // Hidden by default
-          },
-        });
-        
-        // Unclustered points
-        map.addLayer({
-          id: "loads-unclustered",
-          type: "circle",
-          source: "loads",
-          filter: ["!", ["has", "point_count"]],
-          layout: {
-            visibility: "none", // Hidden by default
-          },
-          paint: {
-            "circle-color": [
-              "match",
-              ["get", "equipment"],
-              "dry_van", "#10b981",
-              "reefer", "#f59e0b",
-              "flatbed", "#8b5cf6",
-              "#11b4da",
-            ],
-            "circle-radius": 6,
-            "circle-stroke-width": 1,
-            "circle-stroke-color": "#fff",
-            "circle-emissive-strength": 1,
-          },
-        });
+        // Add loads layers
+        addLoadsLayers(map);
         
         // Inspect a cluster on click
         map.on("click", "loads-clusters", (e) => {
@@ -427,63 +434,7 @@ export function LoadsMap({ className = "", height = "75vh", filters = {} }: Load
           clusterMaxZoom: 14,
           clusterRadius: 50,
         });
-        
-        // Add layers if they don't exist
-        if (!map.getLayer("loads-clusters")) {
-          map.addLayer({
-            id: "loads-clusters",
-            type: "circle",
-            source: "loads",
-            filter: ["has", "point_count"],
-            paint: {
-              "circle-color": [
-                "step",
-                ["get", "point_count"],
-                "#51bbd6",
-                100,
-                "#f1f075",
-                750,
-                "#f28cb1",
-              ],
-              "circle-radius": [
-                "step",
-                ["get", "point_count"],
-                20,
-                100,
-                30,
-                750,
-                40,
-              ],
-            },
-          });
-        }
-        if (!map.getLayer("loads-cluster-count")) {
-          map.addLayer({
-            id: "loads-cluster-count",
-            type: "symbol",
-            source: "loads",
-            filter: ["has", "point_count"],
-            layout: {
-              "text-field": "{point_count_abbreviated}",
-              "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Bold"],
-              "text-size": 12,
-            },
-          });
-        }
-        if (!map.getLayer("loads-unclustered")) {
-          map.addLayer({
-            id: "loads-unclustered",
-            type: "circle",
-            source: "loads",
-            filter: ["!", ["has", "point_count"]],
-            paint: {
-              "circle-color": "#11b4da",
-              "circle-radius": 4,
-              "circle-stroke-width": 1,
-              "circle-stroke-color": "#fff",
-            },
-          });
-        }
+        addLoadsLayers(map);
         return; // Source created, wait for next render to update data
       } catch (err) {
         return;
@@ -568,8 +519,6 @@ export function LoadsMap({ className = "", height = "75vh", filters = {} }: Load
   const layerLabels: Record<LayerGroupId, string> = {
     loads: "Loads",
     routes: "Routes",
-    // Future layers:
-    // calls: "Calls",
   };
 
   const routesActive = activeLayerGroups.includes("routes");

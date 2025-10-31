@@ -1,130 +1,5 @@
-  import { v } from "convex/values";
-import { internalMutation, mutation, query } from "./_generated/server";
-import { OutcomeTag, SentimentTag } from "./types";
-
-export const upsertGeoPoint = mutation({
-  args: {
-    entity_type: v.union(v.literal("load"), v.literal("call")),
-    entity_id: v.string(),
-    role: v.union(v.literal("origin"), v.literal("destination"), v.literal("point")),
-    lng: v.number(),
-    lat: v.number(),
-    geohash: v.string(),
-    country: v.optional(v.string()),
-    state: v.optional(v.string()),
-    city: v.optional(v.string()),
-    timestamp_utc: v.string(),
-    extras: v.optional(v.any()),
-  },
-  returns: v.id("geo_points"),
-  handler: async (ctx, args) => {
-    const existing = await ctx.db
-      .query("geo_points")
-      .withIndex("by_entity", (q) => q.eq("entity_type", args.entity_type).eq("entity_id", args.entity_id))
-      .collect();
-    const match = existing.find((e) => e.role === args.role);
-    if (match) {
-      await ctx.db.patch(match._id, {
-        lng: args.lng,
-        lat: args.lat,
-        geohash: args.geohash,
-        country: args.country ?? null,
-        state: args.state ?? null,
-        city: args.city ?? null,
-        timestamp_utc: args.timestamp_utc,
-        extras: args.extras,
-      });
-      return match._id;
-    }
-    return await ctx.db.insert("geo_points", {
-      entity_type: args.entity_type,
-      entity_id: args.entity_id,
-      role: args.role,
-      lng: args.lng,
-      lat: args.lat,
-      geohash: args.geohash,
-      country: args.country ?? null,
-      state: args.state ?? null,
-      city: args.city ?? null,
-      timestamp_utc: args.timestamp_utc,
-      extras: args.extras,
-    });
-  },
-});
-
-export const getLoadsGeo = query({
-  args: {
-    start_date: v.optional(v.string()),
-    end_date: v.optional(v.string()),
-  },
-  returns: v.any(),
-  handler: async (ctx, args) => {
-    // Get all successful calls (won_transferred)
-    let allCalls = await ctx.db
-      .query("call_metrics")
-      .filter((q) => q.eq(q.field("outcome_tag"), "won_transferred"))
-      .collect();
-    
-    // Filter to only calls with a related_load_id (handle both null and undefined)
-    let calls = allCalls.filter((c) => c.related_load_id != null && c.related_load_id !== "");
-    
-    // Apply date filters if provided
-    if (args.start_date || args.end_date) {
-      calls = calls.filter((c) => {
-        if (args.start_date && c.timestamp_utc < args.start_date) return false;
-        if (args.end_date && c.timestamp_utc > args.end_date) return false;
-        return true;
-      });
-    }
-    
-    // Get geo_points for loads (origins only - one point per call at the origin)
-    const allPoints = await ctx.db
-      .query("geo_points")
-      .withIndex("by_entity", (q) => q.eq("entity_type", "load"))
-      .collect();
-    
-    // Build a map of load_id -> origin geo_point for fast lookup
-    const originByLoadId = new Map<string, typeof allPoints[number]>();
-    for (const point of allPoints) {
-      if (point.role === "origin") {
-        originByLoadId.set(point.entity_id, point);
-      }
-    }
-    
-    // Create ONE POINT PER SUCCESSFUL CALL at the load's origin location
-    const features = calls
-      .map((call) => {
-        const loadId = call.related_load_id!;
-        const originPoint = originByLoadId.get(loadId);
-        if (!originPoint) return null;
-        
-        return {
-          type: "Feature" as const,
-          properties: {
-            call_id: call._id,
-            load_id: loadId,
-            equipment: call.equipment_type,
-            loadboard_rate: call.loadboard_rate,
-            final_rate: call.final_rate,
-            agent_name: call.agent_name,
-            timestamp_utc: call.timestamp_utc,
-          },
-          geometry: {
-            type: "Point" as const,
-            coordinates: [originPoint.lng, originPoint.lat] as [number, number],
-          },
-        };
-      })
-      .filter((f): f is NonNullable<typeof f> => f !== null);
-    
-    const result = {
-      type: "FeatureCollection" as const,
-      features,
-    };
-    
-    return result;
-  },
-});
+import { v } from "convex/values";
+import { internalMutation, query } from "./_generated/server";
 
 /**
  * Query to get load routes (origin to destination pairs) for successful loads only
@@ -238,56 +113,6 @@ export const getLoadsRoutes = query({
   },
 });
 
-export const getCallsByLoadOriginGeo = query({
-  args: {
-    start_date: v.optional(v.string()),
-    end_date: v.optional(v.string()),
-    outcome_tag: v.optional(v.string()),
-  },
-  returns: v.any(),
-  handler: async (ctx, args) => {
-    // Fetch all calls and filter to those with a related load
-    let calls = (await ctx.db.query("call_metrics").collect()).filter((c) => c.related_load_id != null);
-    // Apply time/outcome filters
-    calls = calls.filter((c) => {
-      if (args.start_date && c.timestamp_utc < args.start_date) return false;
-      if (args.end_date && c.timestamp_utc > args.end_date) return false;
-      if (args.outcome_tag && args.outcome_tag !== "all" && c.outcome_tag !== (args.outcome_tag as OutcomeTag)) return false;
-      return true;
-    });
-
-    // Build map of load_id -> origin geo point
-    const loadIds = Array.from(new Set(calls.map((c) => c.related_load_id!)));
-    const geoAll = await ctx.db
-      .query("geo_points")
-      .withIndex("by_role", (ix) => ix.eq("entity_type", "load").eq("role", "origin"))
-      .collect();
-    const originByLoadId = new Map<string, typeof geoAll[number]>();
-    for (const g of geoAll) {
-      if (loadIds.includes(g.entity_id)) originByLoadId.set(g.entity_id, g);
-    }
-
-    return {
-      type: "FeatureCollection",
-      features: calls
-        .map((c) => ({ call: c, origin: originByLoadId.get(c.related_load_id!) }))
-        .filter((x) => x.origin)
-        .map(({ call, origin }) => ({
-          type: "Feature",
-          properties: {
-            call_id: call._id,
-            load_id: call.related_load_id,
-            outcome_tag: call.outcome_tag,
-            sentiment_tag: call.sentiment_tag as SentimentTag,
-            negotiation_rounds: call.negotiation_rounds,
-            uplift_pct: call.final_rate !== null ? ((call.final_rate - call.loadboard_rate) / call.loadboard_rate) * 100 : null,
-            timestamp_utc: call.timestamp_utc,
-          },
-          geometry: { type: "Point", coordinates: [origin!.lng, origin!.lat] },
-        })),
-    } as const;
-  },
-});
 
 /**
  * City coordinates lookup for major US cities
@@ -353,11 +178,8 @@ const CITY_COORDINATES: Record<string, { lat: number; lng: number; city: string;
 
 /**
  * Simple geohash generation based on lat/lng
- * This is a simplified version - in production you might want to use a proper geohash library
  */
 function generateGeohash(lat: number, lng: number): string {
-  // Simple base32 encoding of lat/lng as a placeholder
-  // In production, use a proper geohash algorithm (e.g., from a library)
   const latStr = lat.toFixed(4);
   const lngStr = lng.toFixed(4);
   return `${latStr}_${lngStr}`.replace(/[^a-zA-Z0-9]/g, '');

@@ -36,10 +36,9 @@ export const getMapLoadsPoints = query({
         return false;
       }
       
-      // Outcome filter - we need to look up the call_metric for this
-      // For now, map_loads_points only contains won_transferred calls, so outcome filter only applies to that
+      // Outcome filter - map_loads_points only contains won_transferred calls
       if (args.outcome_tag && args.outcome_tag !== "all" && args.outcome_tag !== "won_transferred") {
-        return false; // Only won_transferred calls are in map_loads_points
+        return false;
       }
       
       return true;
@@ -72,7 +71,6 @@ export const getMapLoadsPoints = query({
 
 /**
  * Background mutation to update map points when a successful call is created
- * Called automatically after createCallMetric for won_transferred calls
  */
 export const updateMapPointForCall = internalMutation({
   args: {
@@ -140,7 +138,6 @@ export const updateMapPointForCall = internalMutation({
 
 /**
  * Internal mutation to rebuild map points from all successful calls
- * Useful for initial population or fixing data inconsistencies
  */
 export const rebuildMapPoints = internalMutation({
   args: {},

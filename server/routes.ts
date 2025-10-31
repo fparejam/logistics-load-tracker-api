@@ -309,6 +309,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
+      // Validate optional related_load_id if provided
+      if (body.related_load_id !== null && body.related_load_id !== undefined) {
+        if (typeof body.related_load_id !== "string" || body.related_load_id.trim() === "") {
+          return res.status(400).json({
+            error: "Validation error",
+            details: "related_load_id must be a non-empty string if provided",
+          });
+        }
+      }
+
       // Generate timestamp automatically (don't allow client to set it)
       const timestamp = new Date().toISOString();
 
@@ -322,6 +332,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         negotiation_rounds: body.negotiation_rounds,
         loadboard_rate: body.loadboard_rate,
         final_rate: body.outcome_tag === "won_transferred" ? body.final_rate : null,
+        related_load_id: body.related_load_id ?? null,
         rejected_rate: body.rejected_rate ?? null,
         loads_offered: body.loads_offered ?? null,
       });

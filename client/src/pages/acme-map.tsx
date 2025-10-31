@@ -1,72 +1,102 @@
 import { Layout } from "@/components/layout";
-import { useEffect, useRef } from "react";
-import mapboxgl from "mapbox-gl";
-import "mapbox-gl/dist/mapbox-gl.css";
-
-// Vite only exposes variables prefixed with VITE_
-const accessToken = (import.meta as any).env?.VITE_MAPBOX_API_TOKEN as string | undefined;
+import { LoadsMap } from "@/components/loads-map";
+import { AcmeTopFilters, TopFiltersState } from "@/components/dashboard/acme-top-filters";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { useState, useMemo } from "react";
 
 export default function AcmeMap() {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<mapboxgl.Map | null>(null);
+  // Initialize filters with defaults (no outcome filter needed for map - only shows successful loads)
+  const [filters, setFilters] = useState<TopFiltersState>({
+    dateRange: "allTime",
+    equipment: "all",
+    agent: "all",
+    outcome: "all", // Required by type but hidden from UI
+  });
 
-  useEffect(() => {
-    // Debug token visibility in dev
-    // eslint-disable-next-line no-console
-    console.log("[Map] VITE_MAPBOX_API_TOKEN present:", Boolean(accessToken));
-    if (!containerRef.current || mapRef.current) return;
-    // eslint-disable-next-line no-console
-    console.log("[Map] container size", containerRef.current.clientWidth, containerRef.current.clientHeight);
-    if (accessToken) {
-      mapboxgl.accessToken = accessToken;
+  // Calculate date range
+  const { startDate, endDate } = useMemo(() => {
+    // If "allTime" is selected, don't apply date filters
+    if (filters.dateRange === "allTime") {
+      return {
+        startDate: undefined,
+        endDate: undefined,
+      };
     }
-    // Ensure container is empty (React StrictMode can double-mount)
-    try {
-      containerRef.current.innerHTML = "";
-    } catch {}
-    const map = new mapboxgl.Map({
-      container: containerRef.current,
-      style: "mapbox://styles/mapbox/standard",
-      center: [-97.5, 39.8],
-      zoom: 3,
-      attributionControl: true,
-      projection: "globe",
-    });
-    map.addControl(new mapboxgl.NavigationControl(), "top-right");
-    map.addControl(new mapboxgl.ScaleControl({ unit: "imperial" }), "bottom-left");
-    map.on("style.load", () => {
-      map.setFog({});
-      // Some environments need an explicit resize after mount
-      setTimeout(() => map.resize(), 0);
-    });
-    map.on("error", (e) => {
-      // eslint-disable-next-line no-console
-      console.error("[Map] runtime error:", e?.error || e);
-    });
-    mapRef.current = map;
-    return () => {
-      try {
-        map.remove();
-      } finally {
-        mapRef.current = null;
-        if (containerRef.current) containerRef.current.innerHTML = "";
-      }
+
+    const now = new Date();
+    let start: Date;
+    // End date should be end of today (23:59:59.999) to include all calls from today
+    const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+
+    switch (filters.dateRange) {
+      case "today":
+        start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+        break;
+      case "last7":
+        start = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        start.setHours(0, 0, 0, 0);
+        break;
+      case "thisWeek":
+        const dayOfWeek = now.getDay();
+        start = new Date(now.getTime() - dayOfWeek * 24 * 60 * 60 * 1000);
+        start.setHours(0, 0, 0, 0);
+        break;
+      case "last30":
+        start = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        start.setHours(0, 0, 0, 0);
+        break;
+      case "custom":
+        // For now, default to last 7 days for custom
+        start = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        start.setHours(0, 0, 0, 0);
+        break;
+      default:
+        start = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        start.setHours(0, 0, 0, 0);
+    }
+
+    return {
+      startDate: start.toISOString(),
+      endDate: end.toISOString(),
     };
-  }, []);
+  }, [filters.dateRange]);
+
+  // Get agents list
+  const agents = useQuery(api.call_metrics.getAgents);
 
   return (
     <Layout>
       <div className="flex flex-col flex-1 w-full">
         <div className="flex-1 px-4 sm:px-6 lg:px-8">
-          <div
-            ref={containerRef}
-            className="w-full mt-2 rounded-xl border border-gray-200 shadow-sm overflow-hidden"
-            style={{ height: "75vh" }}
+          {/* Filters */}
+          <div className="mb-4 mt-2">
+            <AcmeTopFilters
+              filters={filters as TopFiltersState}
+              setFilters={(newFilters) => {
+                const { outcome, ...rest } = newFilters;
+                setFilters(rest as typeof filters);
+              }}
+              agents={agents || []}
+              isLoading={agents === undefined}
+              hideOutcome={true}
+            />
+          </div>
+          
+          {/* Map */}
+          <LoadsMap 
+            className="mt-2" 
+            height="80vh"
+            filters={{
+              startDate,
+              endDate,
+              equipment: filters.equipment !== "all" ? filters.equipment : undefined,
+              agent_name: filters.agent !== "all" ? filters.agent : undefined,
+              // No outcome_tag filter - map only shows successful loads
+            }}
           />
         </div>
       </div>
     </Layout>
   );
 }
-
-

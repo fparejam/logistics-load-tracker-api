@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { query, internalMutation, mutation } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { Doc } from "./_generated/dataModel";
 import { OutcomeTag, SentimentTag } from "./types";
 
@@ -9,8 +10,8 @@ import { OutcomeTag, SentimentTag } from "./types";
 
 export const getSummary = query({
   args: {
-    start_date: v.string(), // ISO string
-    end_date: v.string(), // ISO string
+    start_date: v.optional(v.string()), // ISO string
+    end_date: v.optional(v.string()), // ISO string
     equipment_type: v.optional(v.string()),
     agent_name: v.optional(v.string()),
     outcome_tag: v.optional(v.string()),
@@ -31,10 +32,11 @@ export const getSummary = query({
 
     // Apply filters
     const filteredCalls = allCalls.filter((call) => {
-      // Date filter - use inclusive boundaries (>= start and <= end)
-      const callDate = call.timestamp_utc;
-      if (callDate < args.start_date || callDate > args.end_date) {
-        return false;
+      // Date filter - only apply if dates are provided
+      if (args.start_date || args.end_date) {
+        const callDate = call.timestamp_utc;
+        if (args.start_date && callDate < args.start_date) return false;
+        if (args.end_date && callDate > args.end_date) return false;
       }
 
       // Equipment filter
@@ -131,8 +133,8 @@ export const getSummary = query({
  */
 export const getOutcomeBreakdown = query({
   args: {
-    start_date: v.string(), // ISO string
-    end_date: v.string(), // ISO string
+    start_date: v.optional(v.string()), // ISO string
+    end_date: v.optional(v.string()), // ISO string
     equipment_type: v.optional(v.string()),
     agent_name: v.optional(v.string()),
     outcome_tag: v.optional(v.string()),
@@ -148,10 +150,11 @@ export const getOutcomeBreakdown = query({
 
     // Apply filters (same logic as getSummary)
     const filteredCalls = allCalls.filter((call) => {
-      // Date filter - use inclusive boundaries (>= start and <= end)
-      const callDate = call.timestamp_utc;
-      if (callDate < args.start_date || callDate > args.end_date) {
-        return false;
+      // Date filter - only apply if dates are provided
+      if (args.start_date || args.end_date) {
+        const callDate = call.timestamp_utc;
+        if (args.start_date && callDate < args.start_date) return false;
+        if (args.end_date && callDate > args.end_date) return false;
       }
 
       // Equipment filter
@@ -209,10 +212,11 @@ export const getWinsByRounds = query({
 
     // Apply filters (same logic as getSummary)
     const filteredCalls = allCalls.filter((call) => {
-      // Date filter
-      const callDate = call.timestamp_utc;
-      if (callDate < args.start_date || callDate > args.end_date) {
-        return false;
+      // Date filter - only apply if dates are provided
+      if (args.start_date || args.end_date) {
+        const callDate = call.timestamp_utc;
+        if (args.start_date && callDate < args.start_date) return false;
+        if (args.end_date && callDate > args.end_date) return false;
       }
 
       // Equipment filter
@@ -265,8 +269,8 @@ export const getWinsByRounds = query({
  */
 export const getWinsSegmented = query({
   args: {
-    start_date: v.string(), // ISO string
-    end_date: v.string(), // ISO string
+    start_date: v.optional(v.string()), // ISO string
+    end_date: v.optional(v.string()), // ISO string
     equipment_type: v.optional(v.string()),
     agent_name: v.optional(v.string()),
     outcome_tag: v.optional(v.string()),
@@ -281,10 +285,11 @@ export const getWinsSegmented = query({
 
     // Apply filters (same logic as getSummary)
     const filteredCalls = allCalls.filter((call) => {
-      // Date filter
-      const callDate = call.timestamp_utc;
-      if (callDate < args.start_date || callDate > args.end_date) {
-        return false;
+      // Date filter - only apply if dates are provided
+      if (args.start_date || args.end_date) {
+        const callDate = call.timestamp_utc;
+        if (args.start_date && callDate < args.start_date) return false;
+        if (args.end_date && callDate > args.end_date) return false;
       }
 
       // Equipment filter
@@ -335,8 +340,8 @@ export const getWinsSegmented = query({
  */
 export const getAgentMetrics = query({
   args: {
-    start_date: v.string(), // ISO string
-    end_date: v.string(), // ISO string
+    start_date: v.optional(v.string()), // ISO string
+    end_date: v.optional(v.string()), // ISO string
     equipment_type: v.optional(v.string()),
     agent_name: v.optional(v.string()),
     outcome_tag: v.optional(v.string()),
@@ -356,10 +361,11 @@ export const getAgentMetrics = query({
 
     // Apply filters (same logic as getSummary)
     const filteredCalls = allCalls.filter((call) => {
-      // Date filter
-      const callDate = call.timestamp_utc;
-      if (callDate < args.start_date || callDate > args.end_date) {
-        return false;
+      // Date filter - only apply if dates are provided
+      if (args.start_date || args.end_date) {
+        const callDate = call.timestamp_utc;
+        if (args.start_date && callDate < args.start_date) return false;
+        if (args.end_date && callDate > args.end_date) return false;
       }
 
       // Equipment filter
@@ -466,8 +472,8 @@ export const getAgents = query({
  */
 export const getPriceDisagreementBreakdown = query({
   args: {
-    start_date: v.string(),
-    end_date: v.string(),
+    start_date: v.optional(v.string()),
+    end_date: v.optional(v.string()),
     equipment_type: v.optional(v.string()),
     agent_name: v.optional(v.string()),
     outcome_tag: v.optional(v.string()),
@@ -483,9 +489,11 @@ export const getPriceDisagreementBreakdown = query({
 
     // Apply filters (same logic as other queries)
     const filteredCalls = allCalls.filter((call) => {
-      const callDate = call.timestamp_utc;
-      if (callDate < args.start_date || callDate > args.end_date) {
-        return false;
+      // Date filter - only apply if dates are provided
+      if (args.start_date || args.end_date) {
+        const callDate = call.timestamp_utc;
+        if (args.start_date && callDate < args.start_date) return false;
+        if (args.end_date && callDate > args.end_date) return false;
       }
       if (args.equipment_type && args.equipment_type !== "all" && call.equipment_type !== args.equipment_type) {
         return false;
@@ -535,8 +543,8 @@ export const getPriceDisagreementBreakdown = query({
  */
 export const getNoFitBreakdown = query({
   args: {
-    start_date: v.string(),
-    end_date: v.string(),
+    start_date: v.optional(v.string()),
+    end_date: v.optional(v.string()),
     equipment_type: v.optional(v.string()),
     agent_name: v.optional(v.string()),
     outcome_tag: v.optional(v.string()),
@@ -552,9 +560,11 @@ export const getNoFitBreakdown = query({
 
     // Apply filters (same logic as other queries)
     const filteredCalls = allCalls.filter((call) => {
-      const callDate = call.timestamp_utc;
-      if (callDate < args.start_date || callDate > args.end_date) {
-        return false;
+      // Date filter - only apply if dates are provided
+      if (args.start_date || args.end_date) {
+        const callDate = call.timestamp_utc;
+        if (args.start_date && callDate < args.start_date) return false;
+        if (args.end_date && callDate > args.end_date) return false;
       }
       if (args.equipment_type && args.equipment_type !== "all" && call.equipment_type !== args.equipment_type) {
         return false;
@@ -612,6 +622,29 @@ export const seedCallMetrics = internalMutation({
         await ctx.db.delete(call._id);
       }
     }
+    
+    // Get all loads to assign to successful calls
+    const allLoads = await ctx.db.query("loads").collect();
+    
+    // Only use loads that have geo_points (origin) - this ensures map points can be created
+    const allGeoPoints = await ctx.db
+      .query("geo_points")
+      .withIndex("by_entity", (q) => q.eq("entity_type", "load"))
+      .filter((q) => q.eq(q.field("role"), "origin"))
+      .collect();
+    
+    const loadsWithGeoPoints = new Set(allGeoPoints.map(gp => gp.entity_id));
+    const loadIds = allLoads
+      .filter(load => loadsWithGeoPoints.has(load.load_id))
+      .map(load => load.load_id);
+    
+    if (loadIds.length === 0) {
+      // If no loads have geo_points, log a warning but continue
+      console.log("⚠️ [seedCallMetrics] No loads found with geo_points. Successful calls will not have related_load_id.");
+    } else {
+      console.log(`✅ [seedCallMetrics] Found ${loadIds.length} loads with geo_points (out of ${allLoads.length} total loads)`);
+    }
+    
     const agents = ["Pablo", "Katya"];
     const equipmentTypes = ["dry_van", "reefer", "flatbed"];
     const sampleCalls: Array<Omit<Doc<"call_metrics">, "_id" | "_creationTime">> = [];
@@ -734,10 +767,18 @@ export const seedCallMetrics = internalMutation({
           loadsOffered = sampleLoadsOffered();
         }
 
+        // Assign a load_id to successful calls (won_transferred)
+        let relatedLoadId: string | null = null;
+        if (outcome === OutcomeTag.WonTransferred && loadIds.length > 0) {
+          // Randomly assign a load to this successful call
+          relatedLoadId = loadIds[Math.floor(Math.random() * loadIds.length)];
+        }
+
         sampleCalls.push({
           timestamp_utc: callDate.toISOString(),
           agent_name: agent,
           equipment_type: equipment,
+          related_load_id: relatedLoadId,
           outcome_tag: outcome,
           sentiment_tag: sentiment,
           negotiation_rounds: negotiationRounds,
@@ -761,8 +802,17 @@ export const seedCallMetrics = internalMutation({
       [OutcomeTag.NoAgreementPrice]: 0,
       [OutcomeTag.NoFitFound]: 0,
     } as Record<OutcomeTag, number>;
+    let winsWithLoadId = 0;
+    let winsWithoutLoadId = 0;
     for (const call of verifyCount) {
       outcomeCounts[call.outcome_tag]++;
+      if (call.outcome_tag === OutcomeTag.WonTransferred) {
+        if (call.related_load_id != null && call.related_load_id !== "") {
+          winsWithLoadId++;
+        } else {
+          winsWithoutLoadId++;
+        }
+      }
     }
     return null;
   },
@@ -923,6 +973,7 @@ export const createCallMetric = mutation({
     negotiation_rounds: v.number(),
     loadboard_rate: v.number(),
     final_rate: v.union(v.number(), v.null()),
+    related_load_id: v.optional(v.union(v.string(), v.null())),
     rejected_rate: v.optional(v.union(v.number(), v.null())),
     loads_offered: v.optional(v.union(v.number(), v.null())),
   },
@@ -948,9 +999,26 @@ export const createCallMetric = mutation({
       negotiation_rounds: args.negotiation_rounds,
       loadboard_rate: args.loadboard_rate,
       final_rate: args.final_rate,
+      related_load_id: args.related_load_id ?? null,
       rejected_rate: args.rejected_rate ?? null,
       loads_offered: args.loads_offered ?? null,
     });
+
+    // Background update: If this is a successful call with a load_id, update map points
+    if (args.outcome_tag === OutcomeTag.WonTransferred && args.related_load_id) {
+      // Run asynchronously - fire and forget (don't await to avoid blocking response)
+      ctx.runMutation(internal.map_points.updateMapPointForCall, {
+        call_id: id,
+        load_id: args.related_load_id,
+        equipment_type: args.equipment_type,
+        loadboard_rate: args.loadboard_rate,
+        final_rate: args.final_rate,
+        agent_name: args.agent_name,
+        timestamp_utc: timestamp,
+      }).catch(() => {
+        // Silently fail - map point will be updated on next rebuild if needed
+      });
+    }
 
     return id;
   },
@@ -967,7 +1035,6 @@ export const clearCallMetrics = internalMutation({
     for (const call of calls) {
       await ctx.db.delete(call._id);
     }
-    console.log(`Cleared ${calls.length} call metrics`);
     return null;
   },
 });

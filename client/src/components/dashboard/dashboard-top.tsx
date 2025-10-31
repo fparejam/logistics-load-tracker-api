@@ -15,7 +15,7 @@ export function DashboardTop() {
   // Initialize filters from URL or defaults
   const [filters, setFilters] = useState<TopFiltersState>(() => {
     return {
-      dateRange: (searchParams.get("dateRange") as TopFiltersState["dateRange"]) || "last7",
+      dateRange: (searchParams.get("dateRange") as TopFiltersState["dateRange"]) || "allTime",
       equipment: searchParams.get("equipment") || "all",
       agent: searchParams.get("agent") || "all",
       outcome: searchParams.get("outcome") || "all",
@@ -36,6 +36,14 @@ export function DashboardTop() {
 
   // Calculate date range
   const { startDate, endDate } = useMemo(() => {
+    // If "allTime" is selected, don't apply date filters
+    if (filters.dateRange === "allTime") {
+      return {
+        startDate: undefined,
+        endDate: undefined,
+      };
+    }
+
     const now = new Date();
     let start: Date;
     // End date should be end of today (23:59:59.999) to include all calls from today

@@ -6,7 +6,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export type DateRange = "today" | "last7" | "thisWeek" | "last30" | "custom";
+export type DateRange = "today" | "last7" | "thisWeek" | "last30" | "allTime" | "custom";
 
 export interface TopFiltersState {
   dateRange: DateRange;
@@ -20,6 +20,7 @@ interface TopFiltersProps {
   setFilters: (filters: TopFiltersState) => void;
   agents: string[];
   isLoading?: boolean;
+  hideOutcome?: boolean;
 }
 
 export function AcmeTopFilters({
@@ -27,6 +28,7 @@ export function AcmeTopFilters({
   setFilters,
   agents,
   isLoading = false,
+  hideOutcome = false,
 }: TopFiltersProps) {
 
   return (
@@ -52,6 +54,7 @@ export function AcmeTopFilters({
               <SelectItem value="last7">Last 7 Days</SelectItem>
               <SelectItem value="thisWeek">This Week</SelectItem>
               <SelectItem value="last30">Last 30 Days</SelectItem>
+              <SelectItem value="allTime">All Time</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -103,26 +106,28 @@ export function AcmeTopFilters({
         </div>
 
         {/* Outcome */}
-        <div className="flex-1 min-w-[140px]">
-          <label htmlFor="outcome" className="sr-only">
-            Outcome
-          </label>
-          <Select
-            value={filters.outcome}
-            onValueChange={(value) => setFilters({ ...filters, outcome: value })}
-            disabled={isLoading}
-          >
-            <SelectTrigger id="outcome" aria-label="Select outcome">
-              <SelectValue placeholder="Outcome" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Outcomes</SelectItem>
-              <SelectItem value="won_transferred">Won</SelectItem>
-              <SelectItem value="no_agreement_price">Lost (Price)</SelectItem>
-              <SelectItem value="no_fit_found">Lost (No Fit)</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        {!hideOutcome && (
+          <div className="flex-1 min-w-[140px]">
+            <label htmlFor="outcome" className="sr-only">
+              Outcome
+            </label>
+            <Select
+              value={filters.outcome}
+              onValueChange={(value) => setFilters({ ...filters, outcome: value })}
+              disabled={isLoading}
+            >
+              <SelectTrigger id="outcome" aria-label="Select outcome">
+                <SelectValue placeholder="Outcome" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Outcomes</SelectItem>
+                <SelectItem value="won_transferred">Won</SelectItem>
+                <SelectItem value="no_agreement_price">Lost (Price)</SelectItem>
+                <SelectItem value="no_fit_found">Lost (No Fit)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
       </div>
     </div>
   );

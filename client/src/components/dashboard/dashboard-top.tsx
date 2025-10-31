@@ -107,9 +107,25 @@ export function DashboardTop() {
     outcome_tag: filters.outcome !== "all" ? filters.outcome : undefined,
   });
 
+  const priceDisagreementBreakdown = useQuery(api.call_metrics.getPriceDisagreementBreakdown, {
+    start_date: startDate,
+    end_date: endDate,
+    equipment_type: filters.equipment !== "all" ? filters.equipment : undefined,
+    agent_name: filters.agent !== "all" ? filters.agent : undefined,
+    outcome_tag: filters.outcome !== "all" ? filters.outcome : undefined,
+  });
+
+  const noFitBreakdown = useQuery(api.call_metrics.getNoFitBreakdown, {
+    start_date: startDate,
+    end_date: endDate,
+    equipment_type: filters.equipment !== "all" ? filters.equipment : undefined,
+    agent_name: filters.agent !== "all" ? filters.agent : undefined,
+    outcome_tag: filters.outcome !== "all" ? filters.outcome : undefined,
+  });
+
   const agents = useQuery(api.call_metrics.getAgents);
 
-  const isLoading = data === undefined || agents === undefined || outcomeBreakdown === undefined || winsSegmented === undefined || agentMetrics === undefined;
+  const isLoading = data === undefined || agents === undefined || outcomeBreakdown === undefined || winsSegmented === undefined || agentMetrics === undefined || priceDisagreementBreakdown === undefined || noFitBreakdown === undefined;
 
   return (
     <div className="w-full">
@@ -146,7 +162,13 @@ export function DashboardTop() {
       {/* Detailed Analysis Section - Charts */}
       <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
         {/* Wins/Losses Chart - Top Left */}
-        <WinsLossesChart data={outcomeBreakdown} winsSegmented={winsSegmented} isLoading={isLoading} />
+        <WinsLossesChart 
+          data={outcomeBreakdown} 
+          winsSegmented={winsSegmented}
+          priceDisagreementBreakdown={priceDisagreementBreakdown}
+          noFitBreakdown={noFitBreakdown}
+          isLoading={isLoading} 
+        />
         
         {/* Agent Comparison Chart - Top Right */}
         <AgentComparisonChart data={agentMetrics} isLoading={isLoading} />

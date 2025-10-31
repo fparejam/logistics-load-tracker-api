@@ -286,6 +286,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Validate optional fields if provided
+      if (body.rejected_rate !== null && body.rejected_rate !== undefined) {
+        if (typeof body.rejected_rate !== "number" || body.rejected_rate <= 0) {
+          return res.status(400).json({
+            error: "Validation error",
+            details: "rejected_rate must be a positive number if provided",
+          });
+        }
+      }
+
+      if (body.loads_offered !== null && body.loads_offered !== undefined) {
+        if (
+          typeof body.loads_offered !== "number" ||
+          body.loads_offered < 0 ||
+          !Number.isInteger(body.loads_offered)
+        ) {
+          return res.status(400).json({
+            error: "Validation error",
+            details: "loads_offered must be a non-negative integer if provided",
+          });
+        }
+      }
+
       // Generate timestamp automatically (don't allow client to set it)
       const timestamp = new Date().toISOString();
 
@@ -299,6 +322,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         negotiation_rounds: body.negotiation_rounds,
         loadboard_rate: body.loadboard_rate,
         final_rate: body.outcome_tag === "won_transferred" ? body.final_rate : null,
+        rejected_rate: body.rejected_rate ?? null,
+        loads_offered: body.loads_offered ?? null,
       });
 
       res.status(201).json({

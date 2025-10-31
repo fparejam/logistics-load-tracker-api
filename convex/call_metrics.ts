@@ -462,6 +462,143 @@ export const getAgents = query({
 });
 
 /**
+ * Query to get Price Disagreement breakdown by gap size
+ */
+export const getPriceDisagreementBreakdown = query({
+  args: {
+    start_date: v.string(),
+    end_date: v.string(),
+    equipment_type: v.optional(v.string()),
+    agent_name: v.optional(v.string()),
+    outcome_tag: v.optional(v.string()),
+  },
+  returns: v.object({
+    small_gap: v.number(),    // ≤5% difference
+    medium_gap: v.number(),   // 5-10% difference
+    large_gap: v.number(),    // >10% difference
+    total: v.number(),
+  }),
+  handler: async (ctx, args) => {
+    let allCalls = await ctx.db.query("call_metrics").collect();
+
+    // Apply filters (same logic as other queries)
+    const filteredCalls = allCalls.filter((call) => {
+      const callDate = call.timestamp_utc;
+      if (callDate < args.start_date || callDate > args.end_date) {
+        return false;
+      }
+      if (args.equipment_type && args.equipment_type !== "all" && call.equipment_type !== args.equipment_type) {
+        return false;
+      }
+      if (args.agent_name && args.agent_name !== "all" && call.agent_name !== args.agent_name) {
+        return false;
+      }
+      if (args.outcome_tag && args.outcome_tag !== "all" && call.outcome_tag !== args.outcome_tag) {
+        return false;
+      }
+      return true;
+    });
+
+    // Filter for price disagreements with rejected_rate data
+    const priceDisagreements = filteredCalls.filter(
+      (c) => c.outcome_tag === OutcomeTag.NoAgreementPrice && c.rejected_rate !== null && c.rejected_rate !== undefined
+    );
+
+    // Segment by price gap
+    let smallGap = 0;  // ≤5% difference
+    let mediumGap = 0; // 5-10% difference
+    let largeGap = 0;  // >10% difference
+
+    for (const pd of priceDisagreements) {
+      const gap = ((pd.rejected_rate! - pd.loadboard_rate) / pd.loadboard_rate) * 100;
+      const absGap = Math.abs(gap);
+      if (absGap <= 5) {
+        smallGap++;
+      } else if (absGap <= 10) {
+        mediumGap++;
+      } else {
+        largeGap++;
+      }
+    }
+
+    return {
+      small_gap: smallGap,
+      medium_gap: mediumGap,
+      large_gap: largeGap,
+      total: priceDisagreements.length,
+    };
+  },
+});
+
+/**
+ * Query to get No Fit breakdown by loads offered
+ */
+export const getNoFitBreakdown = query({
+  args: {
+    start_date: v.string(),
+    end_date: v.string(),
+    equipment_type: v.optional(v.string()),
+    agent_name: v.optional(v.string()),
+    outcome_tag: v.optional(v.string()),
+  },
+  returns: v.object({
+    few_loads: v.number(),       // 1-2 loads
+    multiple_loads: v.number(),  // 3-5 loads
+    many_loads: v.number(),      // 6+ loads
+    total: v.number(),
+  }),
+  handler: async (ctx, args) => {
+    let allCalls = await ctx.db.query("call_metrics").collect();
+
+    // Apply filters (same logic as other queries)
+    const filteredCalls = allCalls.filter((call) => {
+      const callDate = call.timestamp_utc;
+      if (callDate < args.start_date || callDate > args.end_date) {
+        return false;
+      }
+      if (args.equipment_type && args.equipment_type !== "all" && call.equipment_type !== args.equipment_type) {
+        return false;
+      }
+      if (args.agent_name && args.agent_name !== "all" && call.agent_name !== args.agent_name) {
+        return false;
+      }
+      if (args.outcome_tag && args.outcome_tag !== "all" && call.outcome_tag !== args.outcome_tag) {
+        return false;
+      }
+      return true;
+    });
+
+    // Filter for no fit outcomes with loads_offered data
+    const noFitCalls = filteredCalls.filter(
+      (c) => c.outcome_tag === OutcomeTag.NoFitFound && c.loads_offered !== null && c.loads_offered !== undefined
+    );
+
+    // Segment by loads offered
+    let fewLoads = 0;       // 1-2 loads
+    let multipleLoads = 0;  // 3-5 loads
+    let manyLoads = 0;      // 6+ loads
+
+    for (const nf of noFitCalls) {
+      const count = nf.loads_offered!;
+      if (count <= 2) {
+        fewLoads++;
+      } else if (count <= 5) {
+        multipleLoads++;
+      } else {
+        manyLoads++;
+      }
+    }
+
+    return {
+      few_loads: fewLoads,
+      multiple_loads: multipleLoads,
+      many_loads: manyLoads,
+      total: noFitCalls.length,
+    };
+  },
+});
+
+/**
  * Internal mutation to seed sample call metrics data
  */
 export const seedCallMetrics = internalMutation({
@@ -553,6 +690,19 @@ export const seedCallMetrics = internalMutation({
         const loadboardRate = Math.floor(Math.random() * 2000) + 500; // $500-$2,499
         const finalRate = outcome === OutcomeTag.WonTransferred ? calculateFinalRate(loadboardRate) : null;
         const callDate = new Date(now - day * 24 * 60 * 60 * 1000 - Math.random() * 24 * 60 * 60 * 1000);
+        
+        // Add breakdown data for losses
+        let rejectedRate: number | null = null;
+        let loadsOffered: number | null = null;
+        
+        if (outcome === OutcomeTag.NoAgreementPrice) {
+          // Generate a rejected rate that's different from loadboard (some percentage difference)
+          const priceDelta = (Math.random() * 20 - 10); // -10% to +10%
+          rejectedRate = Math.round(loadboardRate * (1 + priceDelta / 100));
+        } else if (outcome === OutcomeTag.NoFitFound) {
+          // Generate loads offered count
+          loadsOffered = Math.floor(Math.random() * 10) + 1; // 1-10 loads offered
+        }
 
         sampleCalls.push({
           timestamp_utc: callDate.toISOString(),
@@ -563,6 +713,8 @@ export const seedCallMetrics = internalMutation({
           negotiation_rounds: negotiationRounds,
           loadboard_rate: loadboardRate,
           final_rate: finalRate,
+          rejected_rate: rejectedRate,
+          loads_offered: loadsOffered,
         });
       }
     }
@@ -741,6 +893,8 @@ export const createCallMetric = mutation({
     negotiation_rounds: v.number(),
     loadboard_rate: v.number(),
     final_rate: v.union(v.number(), v.null()),
+    rejected_rate: v.optional(v.union(v.number(), v.null())),
+    loads_offered: v.optional(v.union(v.number(), v.null())),
   },
   returns: v.id("call_metrics"),
   handler: async (ctx, args) => {
@@ -764,6 +918,8 @@ export const createCallMetric = mutation({
       negotiation_rounds: args.negotiation_rounds,
       loadboard_rate: args.loadboard_rate,
       final_rate: args.final_rate,
+      rejected_rate: args.rejected_rate ?? null,
+      loads_offered: args.loads_offered ?? null,
     });
 
     return id;

@@ -47,6 +47,8 @@ export default defineSchema({
     negotiation_rounds: v.number(),
     loadboard_rate: v.number(),
     final_rate: v.union(v.number(), v.null()),
+    rejected_rate: v.optional(v.union(v.number(), v.null())),
+    loads_offered: v.optional(v.union(v.number(), v.null())),
   })
     .index("by_timestamp", ["timestamp_utc"])
     .index("by_agent", ["agent_name"])

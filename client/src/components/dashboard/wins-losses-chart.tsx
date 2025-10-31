@@ -35,9 +35,25 @@ interface WinsSegmentedData {
   total_wins: number;
 }
 
+interface PriceDisagreementBreakdownData {
+  small_gap: number;    // ≤5% difference
+  medium_gap: number;   // 5-10% difference
+  large_gap: number;    // >10% difference
+  total: number;
+}
+
+interface NoFitBreakdownData {
+  few_loads: number;       // 1-2 loads
+  multiple_loads: number;  // 3-5 loads
+  many_loads: number;      // 6+ loads
+  total: number;
+}
+
 interface WinsLossesChartProps {
   data: OutcomeBreakdownData | undefined;
   winsSegmented: WinsSegmentedData | undefined;
+  priceDisagreementBreakdown: PriceDisagreementBreakdownData | undefined;
+  noFitBreakdown: NoFitBreakdownData | undefined;
   isLoading: boolean;
 }
 
@@ -53,7 +69,7 @@ const LABELS = {
   no_fit_found: 'No Fit',
 };
 
-export function WinsLossesChart({ data, winsSegmented, isLoading }: WinsLossesChartProps) {
+export function WinsLossesChart({ data, winsSegmented, priceDisagreementBreakdown, noFitBreakdown, isLoading }: WinsLossesChartProps) {
   if (isLoading) {
     return (
       <Card className="rounded-xl border border-gray-200 shadow-sm bg-white">
@@ -139,6 +155,50 @@ export function WinsLossesChart({ data, winsSegmented, isLoading }: WinsLossesCh
         data: [0, highUpliftWins, 0], // Show in second bar only - less ideal
         backgroundColor: '#34d399', // Lighter green for less ideal
         borderColor: '#34d399',
+        borderWidth: 0,
+      },
+      // Price Disagreement breakdown - Bar 3 only
+      {
+        label: 'Small Gap (≤5%)',
+        data: [0, 0, priceDisagreementBreakdown?.small_gap ?? 0],
+        backgroundColor: '#10b981', // Green
+        borderColor: '#10b981',
+        borderWidth: 0,
+      },
+      {
+        label: 'Medium Gap (5-10%)',
+        data: [0, 0, priceDisagreementBreakdown?.medium_gap ?? 0],
+        backgroundColor: '#f59e0b', // Amber
+        borderColor: '#f59e0b',
+        borderWidth: 0,
+      },
+      {
+        label: 'Large Gap (>10%)',
+        data: [0, 0, priceDisagreementBreakdown?.large_gap ?? 0],
+        backgroundColor: '#ef4444', // Red
+        borderColor: '#ef4444',
+        borderWidth: 0,
+      },
+      // No Fit breakdown - Bar 3 only
+      {
+        label: 'Few Loads (1-2)',
+        data: [0, 0, noFitBreakdown?.few_loads ?? 0],
+        backgroundColor: '#3b82f6', // Blue
+        borderColor: '#3b82f6',
+        borderWidth: 0,
+      },
+      {
+        label: 'Multiple Loads (3-5)',
+        data: [0, 0, noFitBreakdown?.multiple_loads ?? 0],
+        backgroundColor: '#eab308', // Yellow
+        borderColor: '#eab308',
+        borderWidth: 0,
+      },
+      {
+        label: 'Many Loads (6+)',
+        data: [0, 0, noFitBreakdown?.many_loads ?? 0],
+        backgroundColor: '#ef4444', // Red
+        borderColor: '#ef4444',
         borderWidth: 0,
       },
     ],

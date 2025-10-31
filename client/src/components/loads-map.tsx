@@ -143,9 +143,12 @@ export function LoadsMap({ className = "", height = "75vh", filters = {} }: Load
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
     if (!accessToken) {
+      console.error("[LoadsMap] ❌ VITE_MAPBOX_API_TOKEN is missing or undefined");
+      console.log("[LoadsMap] Available env vars:", Object.keys(import.meta.env).filter(k => k.startsWith('VITE_')));
       return;
     }
     
+    console.log("[LoadsMap] ✅ Mapbox token present, initializing map...");
     mapboxgl.accessToken = accessToken;
     
     // Ensure container is empty

@@ -52,7 +52,7 @@ export function AcmeKpiRow({ data, isLoading }: AcmeKpiRowProps) {
   if (isLoading || !data) {
     return (
       <div className="space-y-6">
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        <div className="grid grid-cols-3 gap-4 xl:grid-cols-6">
           {Array.from({ length: 6 }).map((_, i) => (
             <Card key={i} className="rounded-xl border border-gray-200 shadow-sm">
               <CardContent className="p-4">
@@ -62,7 +62,7 @@ export function AcmeKpiRow({ data, isLoading }: AcmeKpiRowProps) {
             </Card>
           ))}
         </div>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-3 gap-4">
           {Array.from({ length: 3 }).map((_, i) => (
             <Card key={i} className="rounded-xl border border-gray-200 shadow-sm">
               <CardContent className="p-4">
@@ -217,13 +217,13 @@ export function AcmeKpiRow({ data, isLoading }: AcmeKpiRowProps) {
 
   return (
     <div className="space-y-6" role="region" aria-label="Key Performance Indicators">
-      {/* Main KPI Row - 6 cards */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      {/* Main KPI Row - 6 cards (3-up on mobile) */}
+      <div className="grid grid-cols-3 gap-4 xl:grid-cols-6">
         {mainKpis.map((kpi, index) => renderKpiCard(kpi, index))}
       </div>
       
-      {/* Financial Metrics Row - 3 cards */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {/* Financial Metrics Row - 3 cards (3-up on mobile) */}
+      <div className="grid grid-cols-3 gap-4">
         {financialKpis.map((kpi, index) => renderKpiCard(kpi, index + 6))}
       </div>
     </div>

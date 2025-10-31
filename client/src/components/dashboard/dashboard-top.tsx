@@ -2,7 +2,7 @@
 
 import { AcmeTopFilters, TopFiltersState } from "./acme-top-filters";
 import { AcmeKpiRow } from "./acme-kpi-row";
-import { WinsLossesChart } from "./wins-losses-chart";
+import { WinsLossesAgSankey } from "./wins-losses-ag-sankey";
 import { AgentComparisonChart } from "./agent-comparison-chart";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -159,18 +159,18 @@ export function DashboardTop() {
         <AcmeKpiRow data={data} isLoading={isLoading} />
       </div>
 
-      {/* Detailed Analysis Section - Charts */}
-      <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-        {/* Wins/Losses Chart - Top Left */}
-        <WinsLossesChart 
-          data={outcomeBreakdown} 
-          winsSegmented={winsSegmented}
-          priceDisagreementBreakdown={priceDisagreementBreakdown}
-          noFitBreakdown={noFitBreakdown}
-          isLoading={isLoading} 
+      {/* Detailed Analysis Section - Charts (stacked) */}
+      <div className="mt-6 grid grid-cols-1 gap-6 items-stretch">
+        {/* Wins/Losses Sankey (AG Charts) - Top Left */}
+        <WinsLossesAgSankey
+          outcome={outcomeBreakdown}
+          wins={winsSegmented}
+          priceDisagreement={priceDisagreementBreakdown}
+          noFit={noFitBreakdown}
+          isLoading={isLoading}
         />
         
-        {/* Agent Comparison Chart - Top Right */}
+        {/* Agent Performance Comparison */}
         <AgentComparisonChart data={agentMetrics} isLoading={isLoading} />
       </div>
     </div>

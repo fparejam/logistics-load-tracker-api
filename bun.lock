@@ -55,6 +55,8 @@
         "@tiptap/suggestion": "^2.12.2",
         "@uidotdev/usehooks": "^2.4.1",
         "@xyflow/react": "^12.8.4",
+        "ag-charts-enterprise": "^12.3.1",
+        "ag-charts-react": "^12.3.1",
         "chart.js": "^4.5.1",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
@@ -680,6 +682,18 @@
     "acorn": ["acorn@8.15.0", "", { "bin": { "acorn": "bin/acorn" } }, "sha512-NZyJarBfL7nWwIq+FDL6Zp/yHEhePMNnnJ0y3qfieCrmNvYct8uvtiV41UvlSe6apAfk0fY1FbWx+NwfmpvtTg=="],
 
     "acorn-jsx": ["acorn-jsx@5.3.2", "", { "peerDependencies": { "acorn": "^6.0.0 || ^7.0.0 || ^8.0.0" } }, "sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ=="],
+
+    "ag-charts-community": ["ag-charts-community@12.3.1", "", { "dependencies": { "ag-charts-core": "12.3.1", "ag-charts-locale": "12.3.1", "ag-charts-types": "12.3.1" } }, "sha512-uRaUFmCl8e0Y3KxjaHUYlkCPS5OtwtfTChkdpoZuBKDXqerCPTjPu+uvlun3rYUSYxScwVf2LZCI0Hfw4Vc+WQ=="],
+
+    "ag-charts-core": ["ag-charts-core@12.3.1", "", { "dependencies": { "ag-charts-types": "12.3.1" } }, "sha512-711UJ0fXengb8+4PEW4nlzWDowmbYymPcjW2eJWHRzzvttUf14hnh+wP/l/s3EGVgYkEHe9vkXFwmeOJUlkC0Q=="],
+
+    "ag-charts-enterprise": ["ag-charts-enterprise@12.3.1", "", { "dependencies": { "ag-charts-community": "12.3.1", "ag-charts-core": "12.3.1" } }, "sha512-2sQIwLfksRTcI4JVRjgQkyGq6z68UVTO/I91HKmtpukrQLsW/o0TzzHmgTtVJOXd9yO9gx2KWa2DMg0+FKdXEQ=="],
+
+    "ag-charts-locale": ["ag-charts-locale@12.3.1", "", {}, "sha512-dCn7oHh3xLI576FT514aBedNQgtb5zwh/Gcj7jHvjOWYRnfH8kaekZzLzntITA6dF6E78okJfoI7CUCbYduQ4Q=="],
+
+    "ag-charts-react": ["ag-charts-react@12.3.1", "", { "dependencies": { "ag-charts-community": "12.3.1" }, "peerDependencies": { "react": "^18.0.0 || ^19.0.0" } }, "sha512-lwMzn+GWJccAHb9iJR4DR4DLkgrfbF/X7dIMzVHAufGhQmvgOVj6LsIVXc8/At0NycKq/PP59+6GVRu6wAXO0w=="],
+
+    "ag-charts-types": ["ag-charts-types@12.3.1", "", {}, "sha512-5216xYoawnvMXDFI6kTpPku+mH0Csiwu/FE7lsAm8Z22HEN6ciSG/V7g+IrpLWncELqksgENebCTP75PZ3CsHA=="],
 
     "ajv": ["ajv@6.12.6", "", { "dependencies": { "fast-deep-equal": "^3.1.1", "fast-json-stable-stringify": "^2.0.0", "json-schema-traverse": "^0.4.1", "uri-js": "^4.2.2" } }, "sha512-j3fVLgvTo527anyYyJOGTYJbG+vnnQYvE0m5mmkc1TK+nxAppkCLMIL0aZ4dblVCNoGShhm+kzE4ZUykBoMg4g=="],
 

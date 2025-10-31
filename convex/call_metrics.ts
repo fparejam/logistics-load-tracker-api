@@ -677,6 +677,34 @@ export const seedCallMetrics = internalMutation({
       return finalRate > listedRate ? finalRate : Math.round(listedRate * 1.01) + 1;
     };
 
+    // Helper: sample price gap bucket (in percent, positive magnitude)
+    const samplePriceGapPct = (): number => {
+      const r = Math.random();
+      if (r < 0.40) {
+        // Small gap ≤5% -> sample in [1, 5]
+        return 1 + Math.random() * 4; // 1-5%
+      } else if (r < 0.75) {
+        // Medium gap 5-10% -> sample in (5, 10]
+        return 5 + Math.random() * 5; // >5-10%
+      }
+      // Large gap >10% -> sample in (10, 20]
+      return 10 + Math.random() * 10; // >10-20%
+    };
+
+    // Helper: sample loads offered bucket
+    const sampleLoadsOffered = (): number => {
+      const r = Math.random();
+      if (r < 0.45) {
+        // Few (1-2)
+        return 1 + Math.floor(Math.random() * 2); // 1-2
+      } else if (r < 0.80) {
+        // Multiple (3-5)
+        return 3 + Math.floor(Math.random() * 3); // 3-5
+      }
+      // Many (6-10)
+      return 6 + Math.floor(Math.random() * 5); // 6-10
+    };
+
     // Generate calls
     for (let day = 0; day < daysToGenerate; day++) {
       const callsPerDay = Math.floor(Math.random() * 8) + 5; // 5-12 calls per day
@@ -696,12 +724,14 @@ export const seedCallMetrics = internalMutation({
         let loadsOffered: number | null = null;
         
         if (outcome === OutcomeTag.NoAgreementPrice) {
-          // Generate a rejected rate that's different from loadboard (some percentage difference)
-          const priceDelta = (Math.random() * 20 - 10); // -10% to +10%
-          rejectedRate = Math.round(loadboardRate * (1 + priceDelta / 100));
+          // Generate a rejected rate using bucketed price gaps
+          const gapPct = samplePriceGapPct();
+          const sign = Math.random() < 0.5 ? -1 : 1; // allow ± for realism
+          const delta = sign * gapPct;
+          rejectedRate = Math.round(loadboardRate * (1 + delta / 100));
         } else if (outcome === OutcomeTag.NoFitFound) {
-          // Generate loads offered count
-          loadsOffered = Math.floor(Math.random() * 10) + 1; // 1-10 loads offered
+          // Generate loads offered count using bucketed distribution
+          loadsOffered = sampleLoadsOffered();
         }
 
         sampleCalls.push({

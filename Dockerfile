@@ -13,17 +13,15 @@ RUN bun install --frozen-lockfile
 COPY . .
 
 # Build the application using Bun
-# We use ARG to accept them, with fallback to env vars
-ARG VITE_CONVEX_URL
-ARG VITE_MAPBOX_API_TOKEN
-ARG VITE_AG_CHARTS_LICENSE
-
-# Export as ENV so Vite can access them (Vite reads VITE_* env vars)
-ENV VITE_CONVEX_URL=${VITE_CONVEX_URL}
-ENV VITE_MAPBOX_API_TOKEN=${VITE_MAPBOX_API_TOKEN}
-ENV VITE_AG_CHARTS_LICENSE=${VITE_AG_CHARTS_LICENSE}
-
-RUN bun run build
+# Use Docker secrets - secrets will be passed via --build-secret during deploy
+RUN --mount=type=secret,id=VITE_CONVEX_URL \
+    --mount=type=secret,id=VITE_MAPBOX_API_TOKEN \
+    --mount=type=secret,id=VITE_AG_CHARTS_LICENSE \
+    export VITE_CONVEX_URL="$(cat /run/secrets/VITE_CONVEX_URL 2>/dev/null || echo '')" && \
+    export VITE_MAPBOX_API_TOKEN="$(cat /run/secrets/VITE_MAPBOX_API_TOKEN 2>/dev/null || echo '')" && \
+    export VITE_AG_CHARTS_LICENSE="$(cat /run/secrets/VITE_AG_CHARTS_LICENSE 2>/dev/null || echo '')" && \
+    echo "Building with secrets..." && \
+    bun run build
 
 # Production stage - use Bun's slim image
 FROM oven/bun:1-slim AS production

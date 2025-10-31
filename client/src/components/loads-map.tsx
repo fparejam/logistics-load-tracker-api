@@ -5,7 +5,7 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 // Vite only exposes variables prefixed with VITE_
-const accessToken = (import.meta as any).env?.VITE_MAPBOX_API_TOKEN as string | undefined;
+const accessToken = (import.meta.env?.VITE_MAPBOX_API_TOKEN || (import.meta as any).env?.VITE_MAPBOX_API_TOKEN) as string | undefined;
 
 interface LoadsMapProps {
   className?: string;
@@ -142,14 +142,22 @@ export function LoadsMap({ className = "", height = "75vh", filters = {} }: Load
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
-    if (!accessToken) {
-      console.error("[LoadsMap] ❌ VITE_MAPBOX_API_TOKEN is missing or undefined");
-      console.log("[LoadsMap] Available env vars:", Object.keys(import.meta.env).filter(k => k.startsWith('VITE_')));
+    
+    // Check token availability and value
+    const envVars = Object.keys(import.meta.env).filter(k => k.startsWith('VITE_'));
+    const tokenValue = import.meta.env.VITE_MAPBOX_API_TOKEN || (import.meta as any).env?.VITE_MAPBOX_API_TOKEN;
+    
+    if (!tokenValue || tokenValue === 'undefined' || tokenValue.trim() === '') {
+      console.error("[LoadsMap] ❌ VITE_MAPBOX_API_TOKEN is missing, undefined, or empty");
+      console.log("[LoadsMap] Available env vars:", envVars);
+      console.log("[LoadsMap] Token value:", tokenValue);
+      console.log("[LoadsMap] Full import.meta.env:", import.meta.env);
       return;
     }
     
     console.log("[LoadsMap] ✅ Mapbox token present, initializing map...");
-    mapboxgl.accessToken = accessToken;
+    console.log("[LoadsMap] Token starts with:", tokenValue.substring(0, 10) + "...");
+    mapboxgl.accessToken = tokenValue;
     
     // Ensure container is empty
     if (containerRef.current) {
